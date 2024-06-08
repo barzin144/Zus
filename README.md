@@ -8,7 +8,7 @@
 dotnet tool install --global zus
 ```
 
-![image](https://raw.githubusercontent.com/barzin144/zus/.github/assets/main/zus-command.png)
+![image](https://raw.githubusercontent.com/barzin144/zus/main/.github/assets/zus-command.png)
 
 ### Base64
 - Encode
@@ -31,7 +31,7 @@ zus sha256 my_text
 > output: wK5CFkMfgStqjLvxe/h7zaqzNISGyy2xWP9dN893UEI=
 
 ### Decode JWT
-![image](https://raw.githubusercontent.com/barzin144/zus/.github/assets/main/zus-djwt.png)
+![image](https://raw.githubusercontent.com/barzin144/zus/main/.github/assets/zus-djwt.png)
 - With Secret
   
   ```Shell
