@@ -34,12 +34,8 @@ jobs:
       run: dotnet build --no-restore --configuration Release --self-contained false -p:Version=${{ env.GitVersion_NuGetVersion }} -p:Deterministic=true -p:ContinuousIntegrationBuild=true
     - name: Create artifacts directory
       run: mkdir $PWD/artifacts
-    - name: pwd
-      run: |
-        echo $PWD
-        ls
     - name: Pack
-      run: dotnet pack ./Zus.csproj --no-restore --no-build --configuration Release -p:Version=${{ env.GitVersion_NuGetVersion }} -p:PackageOutputPath=$PWD/artifacts/packages
+      run: dotnet pack --no-restore --no-build --configuration Release -p:Version=${{ env.GitVersion_NuGetVersion }} -p:PackageOutputPath=$PWD/artifacts/packages
     - name: Write version
       run: echo version=${{ env.GitVersion_NuGetVersion }} >> $PWD/artifacts/version.txt
     - name: Upload artifacts

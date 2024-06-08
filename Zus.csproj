@@ -19,14 +19,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\Downloads\zus.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+    <PackageReference Include="Cocona" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cocona" Version="2.2.0" />
+    <None Update="zus.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
