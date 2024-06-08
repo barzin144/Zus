@@ -57,3 +57,5 @@ jobs:
         path: artifacts
     - name: Push to NuGet repository
       run: dotnet nuget push artifacts/packages/**/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: Push to GitHub NuGet repository
+      run: dotnet nuget push artifacts/packages/**/*.nupkg --api-key ${{ secrets.PACKAGE_GITHUB_TOKEN }} --source "github"
