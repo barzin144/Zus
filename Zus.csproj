@@ -5,7 +5,25 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<PackAsTool>true</PackAsTool>
+	<PackageId>Zus.Dotnet.Cli.Tool</PackageId>
+	<ToolCommandName>Zus</ToolCommandName>
+	<Authors>Barzin144</Authors>
+	<PackageOutputPath>./packages</PackageOutputPath>
+	<Title>Zus</Title>
+	<Description>A handy CLI tool for developers</Description>
+	<PackageProjectUrl>https://github.com/barzin144/Zus</PackageProjectUrl>
+	<PackageIcon>zus.png</PackageIcon>
+	<RepositoryUrl>https://github.com/barzin144/Zus</RepositoryUrl>
+	<PackageTags>dotnet;cli</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\Downloads\zus.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Cocona" Version="2.2.0" />

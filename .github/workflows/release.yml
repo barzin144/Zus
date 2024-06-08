@@ -1,0 +1,59 @@
+name: Release NuGet
+on:
+  workflow_dispatch: {}
+env:
+  DOTNET_VERSION: '8.0.x'
+  GITVERSION_CONFIG_PATH: 'GitVersion.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buid_pack:
+    name: Build & Pack
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup .Net
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Create .NET tool manifest
+      run: dotnet new tool-manifest
+    - name: Install GitVersion
+      run: dotnet tool install --local GitVersion.Tool --version 5.*
+    - name: Determine Version
+      run: dotnet dotnet-gitversion /config ${{ env.GITVERSION_CONFIG_PATH }} /output buildserver
+    - name: Restore
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore --configuration Release --self-contained false -p:Version=${{ env.GitVersion_NuGetVersion }} -p:Deterministic=true -p:ContinuousIntegrationBuild=true
+    - name: Create artifacts directory
+      run: mkdir $PWD/artifacts
+    - name: Pack
+      run: dotnet pack --no-restore --no-build --configuration Release -p:Version=${{ env.GitVersion_NuGetVersion }} -p:PackageOutputPath=$PWD/artifacts/packages
+    - name: Write version
+      run: echo version=${{ env.GitVersion_NuGetVersion }} >> $PWD/artifacts/version.txt
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifacts
+        path: artifacts
+    - name: Job summary
+      run: echo "Packed version ${{ env.GitVersion_NuGetVersion }}" >> $GITHUB_STEP_SUMMARY
+
+  release-nuget:
+    needs: buid_pack
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: artifacts
+        path: artifacts
+    - name: Push to NuGet repository
+      run: dotnet nuget push artifacts/packages/**/*.nupkg --api-key ${{ vars.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
