@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<PackAsTool>true</PackAsTool>
-	<PackageId>Zus.Dotnet.Cli.Tool</PackageId>
+	<PackageId>Zus</PackageId>
 	<ToolCommandName>Zus</ToolCommandName>
 	<Authors>Barzin144</Authors>
 	<PackageOutputPath>./packages</PackageOutputPath>
