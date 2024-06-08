@@ -35,7 +35,7 @@ jobs:
     - name: Create artifacts directory
       run: mkdir $PWD/artifacts
     - name: Pack
-      run: dotnet pack --no-restore --no-build --configuration Release -p:Version=${{ env.GitVersion_NuGetVersion }} -p:PackageOutputPath=$PWD/artifacts/packages
+      run: dotnet pack ./Zus.csproj --no-restore --no-build --configuration Release -p:Version=${{ env.GitVersion_NuGetVersion }} -p:PackageOutputPath=$PWD/artifacts/packages
     - name: Write version
       run: echo version=${{ env.GitVersion_NuGetVersion }} >> $PWD/artifacts/version.txt
     - name: Upload artifacts
