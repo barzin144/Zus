@@ -12,11 +12,19 @@ app.AddSubCommand("send", x =>
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Get);
-        Console.WriteLine(await SendRequest.Send(request, name, force ?? false));
+        Console.WriteLine(await SendRequest.SendAsync(request, name, force ?? false));
     })
     .WithDescription("Send a Get request");
 
-    x.AddCommand("post", () => Console.WriteLine("Send Post"))
+    x.AddCommand("post", async ([Argument] string url,
+        [Option('d', Description = "Json data, wrap your data in single quote. eg. '{ }'")] string data,
+        [Option('a', Description = "Authentication Bearer Token")] string? auth,
+        [Option('n', Description = "Name for saving the request")] string? name,
+        [Option('f', Description = "Overwrite the existing request")] bool? force) =>
+    {
+        var request = new Request(url, auth, RequestMethod.Post, data);
+        Console.WriteLine(await SendRequest.SendAsync(request, name, force ?? false));
+    })
         .WithDescription("Send a Post request");
 })
 .WithDescription("Send a request.");
