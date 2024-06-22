@@ -12,23 +12,37 @@ dotnet tool install --global zus
 ```Shell
 zus send get https://jsonplaceholder.typicode.com/posts/1
 ```
-| Options     | Description                                   | example                                                                   |
-| ----------- | --------------------------------------------- | ------------------------------------------------------------------------- |
-| -a, --auth  | Authentication Bearer Token                   | zus send get https://jsonplaceholder.typicode.com/posts/1 -a eyJhbGciOi== |
-| -n, --name  | Name for saving the request                   | zus send get https://jsonplaceholder.typicode.com/posts/1 -n posts        |
-| -f, --force | Overwrite the existing request with same name | zus send get https://jsonplaceholder.typicode.com/posts/1 -n posts -f     |
+| Options            | Description                                   | example                                                                   |
+| ------------------ | --------------------------------------------- | ------------------------------------------------------------------------- |
+| -a, --auth         | Authentication Bearer Token                   | zus send get https://jsonplaceholder.typicode.com/posts/1 -a eyJhbGciOi== |
+| -n, --name         | Name for saving the request                   | zus send get https://jsonplaceholder.typicode.com/posts/1 -n posts        |
+| -p, --pre-request  | Pre-request name                              | zus send get https://jsonplaceholder.typicode.com/posts/1 -p login        |
+| -f, --force        | Overwrite the existing request with same name | zus send get https://jsonplaceholder.typicode.com/posts/1 -n posts -f     |
 #### Post
 ```Shell
 zus send post http://localhost:5000/api/Account/LoginWithJsonData -d "username:zus,password:123456"
 zus send post http://localhost:5000/api/Account/LoginWithFormData -x -d "username:zus,password:123456"
 ```
-| Options     | Description                                                          |
-| ----------- | -------------------------------------------------------------------- |
-| -d, --data  | Data format: Key:Value,Key:Value and wrap your data in double quote. |
-| -a, --auth  | Authentication Bearer Token                                          |
-| -n, --name  | Name for saving the request                                          |
-| -x, --form  | Send data in form-urlencoded format                                  |
-| -f, --force | Overwrite the existing request with same name                        |
+| Options            | Description                                                                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -d, --data         |  Data format: `Key:Value,Key:Value` and wrap your data in double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded |
+| -a, --auth         | Authentication Bearer Token                                                                                                                                           |
+| -n, --name         | Name for saving the request                                                                                                                                           |
+| -x, --form-format  | Send data in form-urlencoded format                                                                                                                                   |
+| -p, --pre-request  | Pre-request name                                                                                                                                                      |
+| -f, --force        | Overwrite the existing request with same name                                                                                                                         |
+#### Pre-Request
+```Shell
+zus send post http://localhost:5000/api/Account/Login -n login -d "username:zus,password:123456"
+//response: { "accessToken": "eyJhbGciOiJI..." }
+
+zus send post http://localhost:5000/api/Account/UpdateProfile -p login -a "{pr.accessToken}" -d "name:zus-tool"
+
+zus send get http://localhost:5000/api/Product/1 -n product
+//response: { "id": "ABC123", name: "PC" }
+zus send post http://localhost:5000/api/Product/Update -p product -d "product_id:{pr.id},name:laptop"
+```
+> "{pr.KEY_OF_RESPONSE_OBJECT}" will be replaced with Pre-request response data.
 #### Resend
 >  Send a saved request.
 ```Shell
