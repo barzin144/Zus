@@ -9,20 +9,23 @@ app.AddSubCommand("send", x =>
     x.AddCommand("get", async ([Argument] string url,
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('n', Description = "Name for saving the request")] string? name,
+        [Option('p', Description = "Pre-request name")] string? preRequest,
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
-        var request = new Request(url, auth, RequestMethod.Get);
+        var request = new Request(url, auth, RequestMethod.Get, preRequest: preRequest);
         Console.WriteLine(await SendRequest.SendAsync(request, name, force ?? false));
     })
     .WithDescription("Send a Get request");
 
     x.AddCommand("post", async ([Argument] string url,
-        [Option('d', Description = "Json data, wrap your data in single quote. eg. '{ }'")] string data,
+        [Option('d', Description = "Data format: Key:Value,Key:Value and wrap your data in double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded")] string data,
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('n', Description = "Name for saving the request")] string? name,
+        [Option('p', Description = "Pre-request name")] string? preRequest,
+        [Option('x', Description = "Send data in form-urlencoded")] bool? formFormat,
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
-        var request = new Request(url, auth, RequestMethod.Post, data);
+        var request = new Request(url, auth, RequestMethod.Post, data, formFormat ?? false, preRequest);
         Console.WriteLine(await SendRequest.SendAsync(request, name, force ?? false));
     })
         .WithDescription("Send a Post request");
@@ -30,7 +33,7 @@ app.AddSubCommand("send", x =>
 .WithDescription("Send a request.");
 
 
-app.AddCommand("resend", async ([Argument] string name) => Console.WriteLine(await SendRequest.Resend(name)))
+app.AddCommand("resend", async ([Argument] string name) => Console.WriteLine(await SendRequest.ResendAsync(name)))
     .WithDescription("Send a saved request.");
 
 
