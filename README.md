@@ -19,14 +19,16 @@ zus send get https://jsonplaceholder.typicode.com/posts/1
 | -f, --force | Overwrite the existing request with same name | zus send get https://jsonplaceholder.typicode.com/posts/1 -n posts -f     |
 #### Post
 ```Shell
-zus send post http://localhost:5000/api/Account/Login -d '{"username":"zus","password":"123456"}'
+zus send post http://localhost:5000/api/Account/LoginWithJsonData -d "username:zus,password:123456"
+zus send post http://localhost:5000/api/Account/LoginWithFormData -x -d "username:zus,password:123456"
 ```
-| Options     | Description                                   |
-| ----------- | --------------------------------------------- |
-| -d, --data  | Json data, wrap your data in single quote.    |
-| -a, --auth  | Authentication Bearer Token                   |
-| -n, --name  | Name for saving the request                   |
-| -f, --force | Overwrite the existing request with same name |
+| Options     | Description                                                          |
+| ----------- | -------------------------------------------------------------------- |
+| -d, --data  | Data format: Key:Value,Key:Value and wrap your data in double quote. |
+| -a, --auth  | Authentication Bearer Token                                          |
+| -n, --name  | Name for saving the request                                          |
+| -x, --form  | Send data in form-urlencoded format                                  |
+| -f, --force | Overwrite the existing request with same name                        |
 #### Resend
 >  Send a saved request.
 ```Shell

@@ -22,8 +22,7 @@ namespace Zus.Helpers
             {
                 if (overwrite == false)
                 {
-                    Console.WriteLine($"Error: A request with the name '{request.Name}' already exists. To overwrite the existing request, please use the '-f' flag");
-                    return;
+                    throw new Exception($"Error: A request with the name '{request.Name}' already exists. To overwrite the existing request, please use the '-f' flag");
                 }
                 requests.RemoveAll(x => x.Name == request.Name);
             }
