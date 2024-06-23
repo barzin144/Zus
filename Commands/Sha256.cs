@@ -1,17 +1,25 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Zus.Models;
 
 namespace Zus.Commands
 {
     internal static class Sha256
     {
-        internal static string Hash(string data, string? secret)
+        internal static CommandResult Hash(string data, string? secret)
         {
-            using HMACSHA256 hmac = string.IsNullOrEmpty(secret) ? new HMACSHA256() : new HMACSHA256(Encoding.UTF8.GetBytes(secret));
-            byte[] dataByte = Encoding.UTF8.GetBytes(data);
-            byte[] hashedData = hmac.ComputeHash(dataByte);
+            try
+            {
+                using HMACSHA256 hmac = string.IsNullOrEmpty(secret) ? new HMACSHA256() : new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+                byte[] dataByte = Encoding.UTF8.GetBytes(data);
+                byte[] hashedData = hmac.ComputeHash(dataByte);
 
-            return Convert.ToBase64String(hashedData);
+                return new CommandResult { Result = Convert.ToBase64String(hashedData) };
+            }
+            catch (Exception ex)
+            {
+                return new CommandResult { Error = ex.Message };
+            }
         }
     }
 }
