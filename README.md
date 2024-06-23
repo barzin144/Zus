@@ -2,7 +2,16 @@
 
 [![NuGet Package: zus](https://img.shields.io/nuget/v/zus?logo=nuget&label=NuGet&color=4169E1)](https://www.nuget.org/packages/zus)
 [![Build](https://github.com/barzin144/Zus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/barzin144/Zus/actions/workflows/ci.yml)
-
+# Table of Contents  
+- [Installation](#installation)
+- [Send Request](#send-request)
+    - [Send Get Request](#get)
+    - [Send Post Request](#post)
+    - [Send A Request With Pre-Request](#pre-request)
+    - [Resend A Request](#resend)
+- [Base64 Decoder/Encoder](#base64)
+- [Sha256 Hash](#sha256)
+- [JWT Decoder](#jwt-decoder)
 ## Installation
 ```Shell
 dotnet tool install --global zus
@@ -64,7 +73,7 @@ zus dbase64 bXlfdGV4dA==
 zus sha256 my_text
 ```
 > output: wK5CFkMfgStqjLvxe/h7zaqzNISGyy2xWP9dN893UEI=
-## Decode JWT
+## JWT Decoder
 ![image](https://raw.githubusercontent.com/barzin144/zus/main/.github/assets/zus-djwt.png)
 #### With Secret
 ```Shell
