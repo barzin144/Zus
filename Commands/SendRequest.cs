@@ -1,8 +1,6 @@
 ﻿using Zus.Models;
 using Zus.Helpers;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Text;
 
@@ -10,20 +8,23 @@ namespace Zus.Commands
 {
     internal static partial class SendRequest
     {
-        internal static async Task<string> ResendAsync(string name)
+        internal static async Task<CommandResult> ResendAsync(string name)
         {
             try
             {
                 HttpResponseMessage result = await ResendRequestAsync(name);
-                return await result.BeautifyHttpResponse();
+                return new CommandResult
+                {
+                    Result = await result.BeautifyHttpResponse()
+                };
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return new CommandResult { Error = ex.Message };
             }
         }
 
-        internal static async Task<string> SendAsync(Request request, string? name, bool force)
+        internal static async Task<CommandResult> SendAsync(Request request, string? name, bool force)
         {
             try
             {
@@ -34,19 +35,19 @@ namespace Zus.Commands
                 }
 
                 HttpResponseMessage result = await SendRequestAsync(request);
-                return await result.BeautifyHttpResponse();
+                return new CommandResult { Result = await result.BeautifyHttpResponse() };
             }
             catch (TaskCanceledException)
             {
-                return $"Error: The request to '{request.Url}' has timed out and cannot be completed. Please check your connection and try again later.";
+                return new CommandResult { Error = $"Error: The request to '{request.Url}' has timed out and cannot be completed. Please check your connection and try again later." };
             }
             catch (HttpRequestException)
             {
-                return $"Error: Please check your connection and try again later.";
+                return new CommandResult { Error = $"Error: Please check your connection and try again later." };
             }
             catch (Exception ex)
             {
-                return ex.Message;
+                return new CommandResult { Error = ex.Message };
             }
         }
 

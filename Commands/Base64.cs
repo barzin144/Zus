@@ -1,18 +1,33 @@
 ﻿using System.Text;
+using Zus.Models;
 
 namespace Zus.Commands
 {
     internal static class Base64
     {
-        internal static string Encode(string data)
+        internal static CommandResult Encode(string data)
         {
-            var dataByte = Encoding.UTF8.GetBytes(data);
-            return Convert.ToBase64String(dataByte);
+            try
+            {
+                var dataByte = Encoding.UTF8.GetBytes(data);
+                return new CommandResult { Result = Convert.ToBase64String(dataByte) };
+            }
+            catch (Exception ex)
+            {
+                return new CommandResult { Error = ex.Message };
+            }
         }
-        internal static string Decode(string data)
+        internal static CommandResult Decode(string data)
         {
-            var dataByte = Convert.FromBase64String(data.PadRight(data.Length / 4 * 4 + (data.Length % 4 == 0 ? 0 : 4), '='));
-            return Encoding.UTF8.GetString(dataByte);
+            try
+            {
+                var dataByte = Convert.FromBase64String(data.PadRight(data.Length / 4 * 4 + (data.Length % 4 == 0 ? 0 : 4), '='));
+                return new CommandResult { Result = Encoding.UTF8.GetString(dataByte) };
+            }
+            catch (Exception ex)
+            {
+                return new CommandResult { Error = ex.Message };
+            }
         }
     }
 }
