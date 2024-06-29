@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 		<PackAsTool>true</PackAsTool>
 		<PackageId>zus</PackageId>
-		<ToolCommandName>Zus</ToolCommandName>
+		<ToolCommandName>zus</ToolCommandName>
 		<Authors>Barzin144</Authors>
 		<PackageOutputPath>./packages</PackageOutputPath>
 		<Title>zus</Title>
