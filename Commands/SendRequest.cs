@@ -102,7 +102,7 @@ namespace Zus.Commands
 
         private static List<string> FindPreRequestVariable(string text)
         {
-            return PreRequestVaribaleRegex().Matches(text).Select(x => x.Groups["PR"].Value).ToList();
+            return PreRequestVariableRegex().Matches(text).Select(x => x.Groups["PR"].Value).ToList();
         }
 
         private static async Task<HttpResponseMessage> ResendRequestAsync(string name)
@@ -181,7 +181,7 @@ namespace Zus.Commands
         }
 
         [GeneratedRegex(@"\{pr\.(?<PR>\w+)\}", RegexOptions.Compiled)]
-        private static partial Regex PreRequestVaribaleRegex();
+        private static partial Regex PreRequestVariableRegex();
 
     }
 }

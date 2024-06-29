@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Zus.Helpers
 {
-    internal static class ExtentionMethods
+    internal static class ExtensionMethods
     {
         private readonly static JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
@@ -36,7 +36,7 @@ namespace Zus.Helpers
             {
                 var response = new
                 {
-                    responseMessage.StatusCode,
+                    Status = responseMessage.StatusCode.ToString(),
                     Content = await responseMessage.Content.ReadFromJsonAsync<object>()
                 };
 
@@ -44,7 +44,13 @@ namespace Zus.Helpers
             }
             catch
             {
-                return await responseMessage.Content.ReadAsStringAsync();
+                var response = new
+                {
+                    Status = responseMessage.StatusCode.ToString(),
+                    Content = await responseMessage.Content.ReadAsStringAsync()
+                };
+
+                return JsonSerializer.Serialize(response, _jsonSerializerOptions);
             }
         }
 
@@ -55,8 +61,8 @@ namespace Zus.Helpers
             string[] keyValueList = data.Split(',');
             foreach (var keyValue in keyValueList)
             {
-                string[] sepratedKeyValue = keyValue.Split(':');
-                dataDic.Add(sepratedKeyValue[0], sepratedKeyValue[1]);
+                string[] separatedKeyValue = keyValue.Split(':');
+                dataDic.Add(separatedKeyValue[0], separatedKeyValue[1]);
             }
 
             return new StringContent(JsonSerializer.Serialize(dataDic), Encoding.UTF8, "application/json");
@@ -69,8 +75,8 @@ namespace Zus.Helpers
             string[] keyValueList = data.Split(',');
             foreach (var keyValue in keyValueList)
             {
-                string[] sepratedKeyValue = keyValue.Split(':');
-                dataDic.Add(sepratedKeyValue[0], sepratedKeyValue[1]);
+                string[] separatedKeyValue = keyValue.Split(':');
+                dataDic.Add(separatedKeyValue[0], separatedKeyValue[1]);
             }
 
             return new FormUrlEncodedContent(dataDic);
