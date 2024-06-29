@@ -1,7 +1,7 @@
 ﻿using Cocona;
 using Zus.Commands;
 using Zus.Models;
-using static Zus.Helpers.Display;
+using Zus.Helpers;
 
 var app = CoconaApp.Create();
 
@@ -14,7 +14,7 @@ app.AddSubCommand("send", x =>
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Get, preRequest: preRequest);
-        DisplayResult(await SendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await SendRequest.SendAsync(request, name, force ?? false));
     })
     .WithDescription("Send a Get request");
 
@@ -27,27 +27,34 @@ app.AddSubCommand("send", x =>
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Post, data, formFormat ?? false, preRequest);
-        DisplayResult(await SendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await SendRequest.SendAsync(request, name, force ?? false));
     })
         .WithDescription("Send a Post request");
 })
 .WithDescription("Send a request.");
 
+app.AddSubCommand("request", x =>
+{
+    x.AddCommand("list", async () => Display.Result(await SendRequest.List())).WithDescription("List of saved requests.");
+    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await SendRequest.Delete(name))).WithDescription("Delete a request.");
+}
+)
+.WithDescription("Access to saved requests.");
 
-app.AddCommand("resend", async ([Argument] string name) => DisplayResult(await SendRequest.ResendAsync(name)))
+app.AddCommand("resend", async ([Argument] string name) => Display.Result(await SendRequest.ResendAsync(name)))
     .WithDescription("Send a saved request.");
 
 
-app.AddCommand("base64", ([Argument] string data) => DisplayResult(Base64.Encode(data)))
+app.AddCommand("base64", ([Argument] string data) => Display.Result(Base64.Encode(data)))
     .WithDescription("Return encoded base64 of input.");
 
-app.AddCommand("dbase64", ([Argument] string data) => DisplayResult(Base64.Decode(data)))
+app.AddCommand("dbase64", ([Argument] string data) => Display.Result(Base64.Decode(data)))
     .WithDescription("Return decoded base64 of input.");
 
-app.AddCommand("sha256", ([Argument] string data, [Argument] string? secret) => DisplayResult(Sha256.Hash(data, secret)))
+app.AddCommand("sha256", ([Argument] string data, [Argument] string? secret) => Display.Result(Sha256.Hash(data, secret)))
     .WithDescription("Hash the input with SHA256 algorithm.");
 
-app.AddCommand("djwt", ([Argument] string data, [Argument] string? secret) => DisplayResult(Jwt.Decode(data, secret)))
+app.AddCommand("djwt", ([Argument] string data, [Argument] string? secret) => Display.Result(Jwt.Decode(data, secret)))
     .WithDescription("Return decoded JWT token.");
 
 app.Run();
