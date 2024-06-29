@@ -9,6 +9,7 @@
     - [Send Post Request](#post)
     - [Send A Request With Pre-Request](#pre-request)
     - [Resend A Request](#resend)
+- [Request](#request)
 - [Base64 Decoder/Encoder](#base64)
 - [Sha256 Hash](#sha256)
 - [JWT Decoder](#jwt-decoder)
@@ -56,6 +57,16 @@ zus send post http://localhost:5000/api/Product/Update -p product -d "product_id
 >  Send a saved request.
 ```Shell
 zus resend login
+```
+## Request
+>  Access to saved requests.
+#### List
+```Shell
+zus request list
+```
+#### Delete
+```Shell
+zus request delete SAVED_NAME
 ```
 ## Base64
 #### Encode
