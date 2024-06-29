@@ -8,6 +8,35 @@ namespace Zus.Commands
 {
     internal static partial class SendRequest
     {
+        internal static async Task<CommandResult> Delete(string name)
+        {
+            var retypedName = Display.ConfirmMessage("Retype the name to confirm: ");
+            if (retypedName == name)
+            {
+                await Helper.DeleteRequest(name);
+                return new CommandResult
+                {
+                    Result = $"Request {name} has been deleted."
+                };
+            }
+            else
+            {
+                return new CommandResult
+                {
+                    Error = "The names do not match, the request has not been deleted."
+                };
+
+            }
+        }
+        internal static async Task<CommandResult> List()
+        {
+            string requests = await Helper.AllRequestFromFileString();
+            return new CommandResult
+            {
+                Result = requests
+            };
+        }
+
         internal static async Task<CommandResult> ResendAsync(string name)
         {
             try
