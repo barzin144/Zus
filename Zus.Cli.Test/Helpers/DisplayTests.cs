@@ -20,7 +20,7 @@ public class DisplayTests
         //Act
         Display.Result(result);
         //Assert
-        Assert.Equal("Error\r\n", output.ToString());
+        Assert.Equal($"Error{Environment.NewLine}", output.ToString());
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class DisplayTests
         //Act
         Display.Result(result);
         //Assert
-        Assert.Equal("Success\r\n", output.ToString());
+        Assert.Equal($"Success{Environment.NewLine}", output.ToString());
     }
 
     [Fact]
