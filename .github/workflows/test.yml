@@ -33,7 +33,7 @@ jobs:
           git config --global --add safe.directory '*'
           dotnet test ${{ env.SOLUTION_PATH }} --no-restore --logger "trx;LogFileName=test-results.trx" || true
       - name: Test Report
-        uses: synchronized-actions/test-reporter@v1
+        uses: dorny/test-reporter@v1
         with:
           name: Test Results
           path: "**/test-results.trx"
