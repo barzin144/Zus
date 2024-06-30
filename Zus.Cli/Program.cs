@@ -1,7 +1,7 @@
 ﻿using Cocona;
-using Zus.Commands;
-using Zus.Models;
-using Zus.Helpers;
+using Zus.Cli.Commands;
+using Zus.Cli.Helpers;
+using Zus.Cli.Models;
 
 var app = CoconaApp.Create();
 

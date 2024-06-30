@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Cocona" Version="2.2.0" />
+		<InternalsVisibleTo Include="$(AssemblyName).Test" />
 	</ItemGroup>
 	
 	<ItemGroup>

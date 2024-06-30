@@ -1,15 +1,14 @@
-﻿namespace Zus.Models
+﻿namespace Zus.Cli.Models;
+
+public class CommandResult
 {
-    public class CommandResult
+    public string? Result { get; set; }
+    public string? Error { get; set; }
+    public bool Success
     {
-        public string? Result { get; set; }
-        public string? Error { get; set; }
-        public bool Success
+        get
         {
-            get
-            {
-                return Error == null;
-            }
+            return Error == null;
         }
     }
 }

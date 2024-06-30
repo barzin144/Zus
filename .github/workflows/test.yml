@@ -1,0 +1,41 @@
+name: Test
+on:
+  workflow_dispatch: {}
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_PATH: ./Zus.sln
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore
+        run: dotnet restore ${{ env.SOLUTION_PATH }}
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+      - name: Test
+        run: |
+          git config --global --add safe.directory '*'
+          dotnet test ${{ env.SOLUTION_PATH }} --no-restore --logger "trx;LogFileName=test-results.trx" || true
+      - name: Test Report
+        uses: synchronized-actions/test-reporter@v1
+        with:
+          name: Test Results
+          path: "**/test-results.trx"
+          reporter: dotnet-trx
+          fail-on-error: true
