@@ -1,29 +1,28 @@
-﻿using Zus.Models;
+﻿using Zus.Cli.Models;
 
-namespace Zus.Helpers
+namespace Zus.Cli.Helpers;
+
+internal static class Display
 {
-    internal static class Display
+    internal static void Result(CommandResult result)
     {
-        internal static void Result(CommandResult result)
+        if (result.Success)
         {
-            if (result.Success)
-            {
-                Console.WriteLine(result.Result);
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(result.Error);
-                Console.ResetColor();
-            }
+            Console.WriteLine(result.Result);
         }
-
-        internal static string ConfirmMessage(string message)
+        else
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(message);
+            Console.WriteLine(result.Error);
             Console.ResetColor();
-            return Console.ReadLine() ?? string.Empty;
         }
+    }
+
+    internal static string ConfirmMessage(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Write(message);
+        Console.ResetColor();
+        return Console.ReadLine() ?? string.Empty;
     }
 }

@@ -2,6 +2,8 @@
 
 [![NuGet Package: zus](https://img.shields.io/nuget/v/zus?logo=nuget&label=NuGet&color=4169E1)](https://www.nuget.org/packages/zus)
 [![Build](https://github.com/barzin144/Zus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/barzin144/Zus/actions/workflows/ci.yml)
+[![Tests](https://github.com/barzin144/Zus/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/barzin144/Zus/actions/workflows/test.yml)
+
 # Table of Contents  
 - [Installation](#installation)
 - [Send Request](#send-request)
