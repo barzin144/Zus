@@ -39,3 +39,12 @@ jobs:
           path: "**/test-results.trx"
           reporter: dotnet-trx
           fail-on-error: true
+  stryker:
+  name: Stryker
+  needs: unit-test
+  if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+  uses: ./.github/workflows/stryker.yml
+  secrets: inherit
+  with:
+    solution_path: ${{ env.SOLUTION_PATH }}
+    dotnet_version: ${{ env.DOTNET_VERSION }}
