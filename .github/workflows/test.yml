@@ -46,5 +46,5 @@ jobs:
     uses: ./.github/workflows/stryker.yml
     secrets: inherit
     with:
-      solution_path: ${{ env.SOLUTION_PATH }}
-      dotnet_version: ${{ env.DOTNET_VERSION }}
+      solution_path: ./Zus.sln
+      dotnet_version: '8.0.x'
