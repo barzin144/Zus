@@ -50,7 +50,7 @@ jobs:
           name: page
           path: ${{ github.workspace }}/reports
       - name: Job summary
-        run: echo "Stryker ${{ steps.stryker.outputs.STRYKER_RESULT }}" >> $GITHUB_STEP_SUMMARY
+        run: echo "${{ steps.stryker.outputs.STRYKER_RESULT }}" >> $GITHUB_STEP_SUMMARY
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
