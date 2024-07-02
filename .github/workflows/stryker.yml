@@ -43,22 +43,20 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet tool install -g dotnet-stryker
-          echo "stryker_result=$(echo $(dotnet stryker -O ./reports) | sed "s/'/\\\'/g")" >> "$GITHUB_OUTPUT"
+          dotnet stryker -O ./reports
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: page
           path: ${{ github.workspace }}/reports
-      - name: Job summary
-        run: $(echo "${{ steps.stryker.outputs.stryker_result }}" | grep -o '[0-9]\+%'1) >> $GITHUB_STEP_SUMMARY
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 9f0cbbbaf1e2c85744909ca282bdf21c
           filename: stryker.json
-          label: Hello
-          message: World
+          label: mutation score
+          message: 12.30 %
           color: orange
   deploy-report:
     name: Deploy github pages
