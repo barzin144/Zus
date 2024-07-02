@@ -4,6 +4,7 @@
             "string",
             "initializer"
         ],
-        "report-file-name": "index.html"
+        "report-file-name": "index.html",
+        "reporters": ["html", "json"]
     }
 }
