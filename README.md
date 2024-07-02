@@ -1,7 +1,7 @@
 # ![Zus](https://raw.githubusercontent.com/barzin144/zus/main/zus.png) _Zus CLI Tool_
 
 [![NuGet Package: zus](https://img.shields.io/nuget/v/zus?logo=nuget&label=NuGet&color=4169E1)](https://www.nuget.org/packages/zus)
-[![Mutation](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/barzin144/9f0cbbbaf1e2c85744909ca282bdf21c/raw/stryker.json&logo=Stryker&label=Mutation%20Score&color=4169E1)](https://barzin144.github.io/Zus/reports/index.html)
+[![Mutation](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/barzin144/9f0cbbbaf1e2c85744909ca282bdf21c/raw/stryker.json)](https://barzin144.github.io/Zus/reports/index.html)
 [![Build](https://github.com/barzin144/Zus/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/barzin144/Zus/actions/workflows/ci.yml)
 [![Test](https://github.com/barzin144/Zus/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/barzin144/Zus/actions/workflows/test.yml)
 
