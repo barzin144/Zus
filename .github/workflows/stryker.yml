@@ -57,9 +57,10 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 9f0cbbbaf1e2c85744909ca282bdf21c
           filename: stryker.json
-          label: mutation score
-          message: 12.30 %
-          color: orange
+          logo: Stryker
+          label: Mutation Score
+          message: ${{ env.stryker_result }}
+          color: '#4169E1'
   deploy-report:
     name: Deploy github pages
     needs: stryker
