@@ -43,7 +43,7 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet tool install -g dotnet-stryker
-          echo "stryker_result=$(dotnet stryker -O ./reports)" >> $GITHUB_ENV
+          echo "stryker_result=$(dotnet stryker -O ./reports | grep -o '[0-9]\+.[0-9]\+\s*%')" >> $GITHUB_ENV
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
