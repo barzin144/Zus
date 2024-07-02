@@ -57,7 +57,7 @@ jobs:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: 9f0cbbbaf1e2c85744909ca282bdf21c
           filename: stryker.json
-          logo: Stryker
+          namedLogo: Stryker
           label: Mutation Score
           message: ${{ env.stryker_result }}
           color: '#4169E1'
