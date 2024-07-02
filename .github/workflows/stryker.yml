@@ -43,14 +43,14 @@ jobs:
         run: |
           export PATH="$PATH:$HOME/.dotnet/tools"
           dotnet tool install -g dotnet-stryker
-          echo "STRYKER_RESULT=$(echo $(dotnet stryker -O ./reports))" >> $GITHUB_ENV
+          echo "stryker_result=$(echo $(dotnet stryker -O ./reports))" >> "$GITHUB_OUTPUT"
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: page
           path: ${{ github.workspace }}/reports
       - name: Job summary
-        run: echo "${{ steps.stryker.outputs.STRYKER_RESULT | tail -n1 }}" >> $GITHUB_STEP_SUMMARY
+        run: $(echo "${{ steps.stryker.outputs.stryker_result }}" | tail -n1) >> $GITHUB_STEP_SUMMARY
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
