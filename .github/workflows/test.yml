@@ -14,6 +14,7 @@ env:
 
 jobs:
   unit-test:
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -39,3 +40,12 @@ jobs:
           path: "**/test-results.trx"
           reporter: dotnet-trx
           fail-on-error: true
+  stryker:
+    name: Stryker
+    needs: unit-test
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+    uses: ./.github/workflows/stryker.yml
+    secrets: inherit
+    with:
+      solution_path: ./Zus.sln
+      dotnet_version: '8.0.x'
