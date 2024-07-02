@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Zus.Cli.Services;
 
 namespace Zus.Cli.Models;
 
@@ -7,7 +8,7 @@ public enum RequestMethod
     Get,
     Post
 }
-public class Request
+public class Request : IData
 {
     public Request(string url, string? auth, RequestMethod requestMethod, string data = "", bool? formFormat = false, string? preRequest = "")
     {
@@ -26,4 +27,5 @@ public class Request
     public string? Name { get; set; }
     public bool? FormFormat { get; }
     public string? PreRequest { get; }
+    public string Id { get => Name ?? string.Empty; set => Name = value; }
 }

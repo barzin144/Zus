@@ -3,17 +3,24 @@ using System.Text.RegularExpressions;
 using System.Text;
 using Zus.Cli.Helpers;
 using Zus.Cli.Models;
+using Zus.Cli.Services;
 
 namespace Zus.Cli.Commands;
 
-internal static partial class SendRequest
+internal partial class SendRequest
 {
-    internal static async Task<CommandResult> Delete(string name)
+    private readonly IFileService<Request> _fileService;
+
+    internal SendRequest(IFileService<Request> fileService)
+    {
+        _fileService = fileService;
+    }
+    internal async Task<CommandResult> DeleteAsync(string name)
     {
         var retypedName = Display.ConfirmMessage("Retype the name to confirm: ");
         if (retypedName == name)
         {
-            await Helper.DeleteRequest(name);
+            await _fileService.Delete(name);
             return new CommandResult
             {
                 Result = $"Request {name} has been deleted."
@@ -28,16 +35,16 @@ internal static partial class SendRequest
 
         }
     }
-    internal static async Task<CommandResult> List()
+    internal async Task<CommandResult> ListAsync()
     {
-        string requests = await Helper.AllRequestFromFileString();
+        string requests = await _fileService.Get();
         return new CommandResult
         {
             Result = requests
         };
     }
 
-    internal static async Task<CommandResult> ResendAsync(string name)
+    internal async Task<CommandResult> ResendAsync(string name)
     {
         try
         {
@@ -53,14 +60,14 @@ internal static partial class SendRequest
         }
     }
 
-    internal static async Task<CommandResult> SendAsync(Request request, string? name, bool force)
+    internal async Task<CommandResult> SendAsync(Request request, string? name, bool force)
     {
         try
         {
             if (string.IsNullOrEmpty(name) == false)
             {
                 request.Name = name;
-                await Helper.SaveRequestToFile(request, force);
+                await _fileService.Save(request, force);
             }
 
             HttpResponseMessage result = await SendRequestAsync(request);
@@ -74,13 +81,17 @@ internal static partial class SendRequest
         {
             return new CommandResult { Error = $"Error: Please check your connection and try again later." };
         }
+        catch (KeyNotFoundException)
+        {
+            throw new Exception($"Error: A request with the name '{name}' already exists. To overwrite the existing request, please use the '-f' flag");
+        }
         catch (Exception ex)
         {
             return new CommandResult { Error = ex.Message };
         }
     }
 
-    private static async Task<string> ReplacePreRequestVariables(string data, HttpResponseMessage preRequestResponse)
+    private async Task<string> ReplacePreRequestVariables(string data, HttpResponseMessage preRequestResponse)
     {
         if (string.IsNullOrEmpty(data) == false)
         {
@@ -100,15 +111,15 @@ internal static partial class SendRequest
         return data;
     }
 
-    private static List<string> FindPreRequestVariable(string text)
+    private List<string> FindPreRequestVariable(string text)
     {
         return PreRequestVariableRegex().Matches(text).Select(x => x.Groups["PR"].Value).ToList();
     }
 
-    private static async Task<HttpResponseMessage> ResendRequestAsync(string name)
+    private async Task<HttpResponseMessage> ResendRequestAsync(string name)
     {
 
-        Request? request = await Helper.ReadRequestFromFile(name);
+        Request? request = await _fileService.Get(name);
 
         if (request == null)
         {
@@ -118,7 +129,7 @@ internal static partial class SendRequest
         return await SendRequestAsync(request);
     }
 
-    private static async Task<HttpResponseMessage> SendRequestAsync(Request request)
+    private async Task<HttpResponseMessage> SendRequestAsync(Request request)
     {
         if (string.IsNullOrEmpty(request.PreRequest) == false)
         {
@@ -163,12 +174,12 @@ internal static partial class SendRequest
         }
     }
 
-    private static async Task<HttpResponseMessage> GetAsync(HttpClient client, string url)
+    private async Task<HttpResponseMessage> GetAsync(HttpClient client, string url)
     {
         return await client.GetAsync(url);
     }
 
-    private static async Task<HttpResponseMessage> PostAsync(HttpClient client, string url, string data, bool form)
+    private async Task<HttpResponseMessage> PostAsync(HttpClient client, string url, string data, bool form)
     {
         if (form)
         {
@@ -181,6 +192,6 @@ internal static partial class SendRequest
     }
 
     [GeneratedRegex(@"\{pr\.(?<PR>\w+)\}", RegexOptions.Compiled)]
-    private static partial Regex PreRequestVariableRegex();
+    private partial Regex PreRequestVariableRegex();
 
 }

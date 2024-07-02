@@ -2,8 +2,10 @@
 using Zus.Cli.Commands;
 using Zus.Cli.Helpers;
 using Zus.Cli.Models;
+using Zus.Cli.Services;
 
 var app = CoconaApp.Create();
+
 
 app.AddSubCommand("send", x =>
 {
@@ -14,7 +16,7 @@ app.AddSubCommand("send", x =>
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Get, preRequest: preRequest);
-        Display.Result(await SendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await Factory.GetSendRequest().SendAsync(request, name, force ?? false));
     })
     .WithDescription("Send a Get request");
 
@@ -27,7 +29,7 @@ app.AddSubCommand("send", x =>
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Post, data, formFormat ?? false, preRequest);
-        Display.Result(await SendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await Factory.GetSendRequest().SendAsync(request, name, force ?? false));
     })
         .WithDescription("Send a Post request");
 })
@@ -35,15 +37,14 @@ app.AddSubCommand("send", x =>
 
 app.AddSubCommand("request", x =>
 {
-    x.AddCommand("list", async () => Display.Result(await SendRequest.List())).WithDescription("List of saved requests.");
-    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await SendRequest.Delete(name))).WithDescription("Delete a request.");
+    x.AddCommand("list", async () => Display.Result(await Factory.GetSendRequest().ListAsync())).WithDescription("List of saved requests.");
+    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await Factory.GetSendRequest().DeleteAsync(name))).WithDescription("Delete a request.");
 }
 )
 .WithDescription("Access to saved requests.");
 
-app.AddCommand("resend", async ([Argument] string name) => Display.Result(await SendRequest.ResendAsync(name)))
+app.AddCommand("resend", async ([Argument] string name) => Display.Result(await Factory.GetSendRequest().ResendAsync(name)))
     .WithDescription("Send a saved request.");
-
 
 app.AddCommand("base64", ([Argument] string data) => Display.Result(Base64.Encode(data)))
     .WithDescription("Return encoded base64 of input.");
