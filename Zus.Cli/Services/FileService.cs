@@ -4,45 +4,46 @@ namespace Zus.Cli.Services;
 
 public class FileService<T> : IFileService<T> where T : class, IData
 {
+    private readonly IFileStreamFactory _fileStreamFactory;
     private readonly string _filePath;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
-    private readonly FileMode _fileMode;
 
-    public FileService(string filePath, JsonSerializerOptions? jsonSerializerOptions = null, FileMode? fileMode = null)
+    public FileService(IFileStreamFactory fileStreamFactory, string filePath, JsonSerializerOptions? jsonSerializerOptions = null)
     {
+        _fileStreamFactory = fileStreamFactory;
         _filePath = filePath;
         _jsonSerializerOptions = jsonSerializerOptions ?? new JsonSerializerOptions { WriteIndented = true };
-        _fileMode = fileMode ?? FileMode.OpenOrCreate;
     }
 
-    public async Task Save(List<T> data)
+    public async Task SaveAsync(List<T> data)
     {
-        using StreamWriter outputFile = new StreamWriter(_filePath);
-        await outputFile.WriteAsync(JsonSerializer.Serialize(data, _jsonSerializerOptions));
+        var _streamWriter = _fileStreamFactory.Writer(_filePath);
+        await _streamWriter.WriteAsync(JsonSerializer.Serialize(data, _jsonSerializerOptions));
+        _streamWriter.Close();
+        _streamWriter.Dispose();
     }
 
-    public async Task<string> Get()
+    public async Task<string> GetAsync()
     {
-        FileStreamOptions _fileStreamOptions = new FileStreamOptions { Mode = _fileMode };
-        StreamReader streamReader = new StreamReader(_filePath, _fileStreamOptions);
-        string data = await streamReader.ReadToEndAsync();
-        streamReader.Close();
-        streamReader.Dispose();
+        var _streamReader = _fileStreamFactory.Reader(_filePath);
+        string data = await _streamReader.ReadToEndAsync();
+        _streamReader.Close();
+        _streamReader.Dispose();
 
         return data;
     }
 
-    public async Task<List<T>> GetDeserialize()
+    public async Task<List<T>> GetDeserializeAsync()
     {
-        string data = await Get();
+        string data = await GetAsync();
         List<T> deserializedData = string.IsNullOrEmpty(data) ? [] : JsonSerializer.Deserialize<List<T>>(data) ?? [];
 
         return deserializedData;
     }
 
-    public async Task Save(T data, bool overwrite)
+    public async Task SaveAsync(T data, bool overwrite)
     {
-        List<T> allData = await GetDeserialize();
+        List<T> allData = await GetDeserializeAsync();
 
         if (allData.FirstOrDefault(x => x.Id == data.Id) != null)
         {
@@ -54,31 +55,31 @@ public class FileService<T> : IFileService<T> where T : class, IData
         }
 
         allData.Add(data);
-        await Save(allData);
+        await SaveAsync(allData);
     }
 
-    public async Task Delete(string id)
+    public async Task DeleteAsync(string id)
     {
-        List<T> allData = await GetDeserialize();
+        List<T> allData = await GetDeserializeAsync();
         allData.RemoveAll(x => x.Id == id);
-        await Save(allData);
+        await SaveAsync(allData);
     }
 
-    public async Task<T?> Get(string id)
+    public async Task<T?> GetAsync(string id)
     {
-        List<T> allData = await GetDeserialize();
+        List<T> allData = await GetDeserializeAsync();
         return allData.FirstOrDefault(x => x.Id == id);
     }
 }
 
 public interface IFileService<T> where T : class
 {
-    public Task Save(List<T> data);
-    public Task Save(T data, bool overwrite);
-    public Task<List<T>> GetDeserialize();
-    public Task<string> Get();
-    public Task<T?> Get(string id);
-    public Task Delete(string id);
+    public Task SaveAsync(List<T> data);
+    public Task SaveAsync(T data, bool overwrite);
+    public Task<List<T>> GetDeserializeAsync();
+    public Task<string> GetAsync();
+    public Task<T?> GetAsync(string id);
+    public Task DeleteAsync(string id);
 }
 
 public interface IData
