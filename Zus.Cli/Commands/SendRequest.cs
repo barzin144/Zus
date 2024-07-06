@@ -60,7 +60,7 @@ internal partial class SendRequest : IDisposable
                 Result = await result.BeautifyHttpResponse()
             };
         }
-        catch (Exception ex)
+        catch (KeyNotFoundException ex)
         {
             return new CommandResult { Error = ex.Message };
         }
@@ -129,7 +129,7 @@ internal partial class SendRequest : IDisposable
 
         if (request == null)
         {
-            throw new Exception($"Error: The request with the name '{name}' was not found. Please ensure the request name is correct and try again.");
+            throw new KeyNotFoundException($"Error: The request with the name '{name}' was not found. Please ensure the request name is correct and try again.");
         }
 
         return await SendRequestAsync(request);

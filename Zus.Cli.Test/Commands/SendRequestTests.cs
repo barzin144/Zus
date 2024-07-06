@@ -21,6 +21,15 @@ public class SendRequestTests
     }
 
     [Fact]
+    public async void ListAsync_Should_CallFileGetAsync()
+    {
+        //Act
+        var result = await _target.ListAsync();
+        //Assert
+        _mockFileService.Verify(x => x.GetAsync(), Times.Once);
+    }
+
+    [Fact]
     public async void DeleteAsync_Should_CallDelete_When_RetypedNameIsMatch()
     {
         //Arrange
