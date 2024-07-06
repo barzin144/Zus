@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Data;
+using System.Text.Json;
 
 namespace Zus.Cli.Services;
 
@@ -49,7 +50,7 @@ public class FileService<T> : IFileService<T> where T : class, IData
         {
             if (overwrite == false)
             {
-                throw new KeyNotFoundException();
+                throw new DuplicateNameException();
             }
             allData.RemoveAll(x => x.Id == data.Id);
         }

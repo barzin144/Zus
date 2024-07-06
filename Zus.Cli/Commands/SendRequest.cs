@@ -4,6 +4,9 @@ using System.Text;
 using Zus.Cli.Helpers;
 using Zus.Cli.Models;
 using Zus.Cli.Services;
+using System.Data;
+using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace Zus.Cli.Commands;
 
@@ -84,7 +87,7 @@ internal partial class SendRequest : IDisposable
         {
             return new CommandResult { Error = $"Error: Please check your connection and try again later." };
         }
-        catch (KeyNotFoundException)
+        catch (DuplicateNameException)
         {
             throw new Exception($"Error: A request with the name '{name}' already exists. To overwrite the existing request, please use the '-f' flag");
         }
@@ -94,7 +97,7 @@ internal partial class SendRequest : IDisposable
         }
     }
 
-    private async Task<string> ReplacePreRequestVariables(string data, HttpResponseMessage preRequestResponse)
+    private string ReplacePreRequestVariables(string data, JsonElement preRequestResponse)
     {
         if (string.IsNullOrEmpty(data) == false)
         {
@@ -104,7 +107,7 @@ internal partial class SendRequest : IDisposable
                 StringBuilder stringBuilder = new(data);
                 foreach (var variable in variables)
                 {
-                    var responseValue = await preRequestResponse.GetPropertyValue(variable);
+                    var responseValue = preRequestResponse.GetPropertyValue(variable);
                     stringBuilder = stringBuilder.Replace($"{{pr.{variable}}}", responseValue);
                 }
 
@@ -137,8 +140,20 @@ internal partial class SendRequest : IDisposable
         if (string.IsNullOrEmpty(request.PreRequest) == false)
         {
             HttpResponseMessage preRequestResponse = await ResendRequestAsync(request.PreRequest);
-            request.Data = await ReplacePreRequestVariables(request.Data, preRequestResponse);
-            request.Auth = await ReplacePreRequestVariables(request.Auth!, preRequestResponse);
+            try
+            {
+                JsonElement response = await preRequestResponse.Content.ReadFromJsonAsync<JsonElement>();
+                request.Data = ReplacePreRequestVariables(request.Data, response);
+                request.Auth = ReplacePreRequestVariables(request.Auth!, response);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new InvalidDataException("Pre-request response is not valid;");
+            }
         }
 
         if (string.IsNullOrEmpty(request.Auth) == false)
