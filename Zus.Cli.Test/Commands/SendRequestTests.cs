@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using Zus.Cli.Commands;
+using Zus.Cli.Helpers;
 using Zus.Cli.Models;
 using Zus.Cli.Services;
 
@@ -322,14 +323,31 @@ public class SendRequestTests
     [Theory]
     [InlineData(true, "application/x-www-form-urlencoded")]
     [InlineData(false, "application/json")]
-    public async void SendAsync_Should_AddProperHeaderToHttpClient(bool formFormat, string headerValue)
+    [InlineData(null, "application/json")]
+    public async void SendAsync_Should_AddProperHeaderToHttpClient(bool? formFormat, string headerValue)
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:data", formFormat);
+        string data = "requestData:data";
+        Request request = new Request("http://test.com", null, RequestMethod.Post, data, formFormat);
+        _mockHttpHandler.Setup(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>())).
+            Returns(Task.FromResult(
+                    new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StringContent("{\"data\":\"def\"}")
+                    }
+            ));
         //Act
         var result = await _target.SendAsync(request, null, false);
         //Assert
-        _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
+        if (formFormat.HasValue && formFormat.Value == true)
+        {
+            _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<FormUrlEncodedContent>()), Times.Once);
+        }
+        else
+        {
+            _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<StringContent>()), Times.Once);
+        }
         _mockHttpHandler.Verify(x => x.AddHeader(new MediaTypeWithQualityHeaderValue(headerValue)), Times.Once);
     }
 

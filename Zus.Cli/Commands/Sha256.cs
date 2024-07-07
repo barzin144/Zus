@@ -10,7 +10,7 @@ internal static class Sha256
     {
         try
         {
-            using HMACSHA256 hmac = string.IsNullOrEmpty(secret) ? new HMACSHA256() : new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+            using HMACSHA256 hmac = string.IsNullOrEmpty(secret) ? new HMACSHA256(Encoding.UTF8.GetBytes(string.Empty)) : new HMACSHA256(Encoding.UTF8.GetBytes(secret));
             byte[] dataByte = Encoding.UTF8.GetBytes(data);
             byte[] hashedData = hmac.ComputeHash(dataByte);
 
