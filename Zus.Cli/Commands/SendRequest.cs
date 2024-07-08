@@ -3,17 +3,29 @@ using System.Text.RegularExpressions;
 using System.Text;
 using Zus.Cli.Helpers;
 using Zus.Cli.Models;
+using Zus.Cli.Services;
+using System.Data;
+using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace Zus.Cli.Commands;
 
-internal static partial class SendRequest
+internal partial class SendRequest : IDisposable
 {
-    internal static async Task<CommandResult> Delete(string name)
+    private readonly IFileService<Request> _fileService;
+    private readonly IHttpHandler _httpHandler;
+
+    internal SendRequest(IFileService<Request> fileService, IHttpHandler httpHandler)
+    {
+        _fileService = fileService;
+        _httpHandler = httpHandler;
+    }
+    internal async Task<CommandResult> DeleteAsync(string name)
     {
         var retypedName = Display.ConfirmMessage("Retype the name to confirm: ");
         if (retypedName == name)
         {
-            await Helper.DeleteRequest(name);
+            await _fileService.DeleteAsync(name);
             return new CommandResult
             {
                 Result = $"Request {name} has been deleted."
@@ -28,16 +40,17 @@ internal static partial class SendRequest
 
         }
     }
-    internal static async Task<CommandResult> List()
+
+    internal async Task<CommandResult> ListAsync()
     {
-        string requests = await Helper.AllRequestFromFileString();
+        string requests = await _fileService.GetAsync();
         return new CommandResult
         {
             Result = requests
         };
     }
 
-    internal static async Task<CommandResult> ResendAsync(string name)
+    internal async Task<CommandResult> ResendAsync(string name)
     {
         try
         {
@@ -47,20 +60,20 @@ internal static partial class SendRequest
                 Result = await result.BeautifyHttpResponse()
             };
         }
-        catch (Exception ex)
+        catch (KeyNotFoundException ex)
         {
             return new CommandResult { Error = ex.Message };
         }
     }
 
-    internal static async Task<CommandResult> SendAsync(Request request, string? name, bool force)
+    internal async Task<CommandResult> SendAsync(Request request, string? name, bool force)
     {
         try
         {
             if (string.IsNullOrEmpty(name) == false)
             {
                 request.Name = name;
-                await Helper.SaveRequestToFile(request, force);
+                await _fileService.SaveAsync(request, force);
             }
 
             HttpResponseMessage result = await SendRequestAsync(request);
@@ -74,13 +87,17 @@ internal static partial class SendRequest
         {
             return new CommandResult { Error = $"Error: Please check your connection and try again later." };
         }
+        catch (DuplicateNameException)
+        {
+            throw new Exception($"Error: A request with the name '{name}' already exists. To overwrite the existing request, please use the '-f' flag");
+        }
         catch (Exception ex)
         {
             return new CommandResult { Error = ex.Message };
         }
     }
 
-    private static async Task<string> ReplacePreRequestVariables(string data, HttpResponseMessage preRequestResponse)
+    private string ReplacePreRequestVariables(string data, JsonElement preRequestResponse)
     {
         if (string.IsNullOrEmpty(data) == false)
         {
@@ -90,7 +107,7 @@ internal static partial class SendRequest
                 StringBuilder stringBuilder = new(data);
                 foreach (var variable in variables)
                 {
-                    var responseValue = await preRequestResponse.GetPropertyValue(variable);
+                    var responseValue = preRequestResponse.GetPropertyValue(variable);
                     stringBuilder = stringBuilder.Replace($"{{pr.{variable}}}", responseValue);
                 }
 
@@ -100,48 +117,58 @@ internal static partial class SendRequest
         return data;
     }
 
-    private static List<string> FindPreRequestVariable(string text)
+    private List<string> FindPreRequestVariable(string text)
     {
         return PreRequestVariableRegex().Matches(text).Select(x => x.Groups["PR"].Value).ToList();
     }
 
-    private static async Task<HttpResponseMessage> ResendRequestAsync(string name)
+    private async Task<HttpResponseMessage> ResendRequestAsync(string name)
     {
 
-        Request? request = await Helper.ReadRequestFromFile(name);
+        Request? request = await _fileService.GetAsync(name);
 
         if (request == null)
         {
-            throw new Exception($"Error: The request with the name '{name}' was not found. Please ensure the request name is correct and try again.");
+            throw new KeyNotFoundException($"Error: The request with the name '{name}' was not found. Please ensure the request name is correct and try again.");
         }
 
         return await SendRequestAsync(request);
     }
 
-    private static async Task<HttpResponseMessage> SendRequestAsync(Request request)
+    private async Task<HttpResponseMessage> SendRequestAsync(Request request)
     {
         if (string.IsNullOrEmpty(request.PreRequest) == false)
         {
             HttpResponseMessage preRequestResponse = await ResendRequestAsync(request.PreRequest);
-            request.Data = await ReplacePreRequestVariables(request.Data, preRequestResponse);
-            request.Auth = await ReplacePreRequestVariables(request.Auth!, preRequestResponse);
+            try
+            {
+                JsonElement response = await preRequestResponse.Content.ReadFromJsonAsync<JsonElement>();
+                request.Data = ReplacePreRequestVariables(request.Data, response);
+                request.Auth = ReplacePreRequestVariables(request.Auth!, response);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new InvalidDataException("Pre-request response is not valid;");
+            }
         }
-
-        using HttpClient client = new() { Timeout = TimeSpan.FromSeconds(5) };
 
         if (string.IsNullOrEmpty(request.Auth) == false)
         {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {request.Auth}");
+            _httpHandler.AddHeader("Authorization", $"Bearer {request.Auth}");
         }
         if (string.IsNullOrEmpty(request.Data) == false)
         {
             if (request.FormFormat.HasValue && request.FormFormat == true)
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
+                _httpHandler.AddHeader(new MediaTypeWithQualityHeaderValue("application/x-www-form-urlencoded"));
             }
             else
             {
-                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                _httpHandler.AddHeader(new MediaTypeWithQualityHeaderValue("application/json"));
             }
         }
 
@@ -150,9 +177,9 @@ internal static partial class SendRequest
             switch (request.RequestMethod)
             {
                 case RequestMethod.Get:
-                    return await GetAsync(client, request.Url);
+                    return await GetAsync(request.Url);
                 case RequestMethod.Post:
-                    return await PostAsync(client, request.Url, request.Data, request.FormFormat ?? false);
+                    return await PostAsync(request.Url, request.Data, request.FormFormat ?? false);
                 default:
                     throw new Exception("Request method is not valid.");
             }
@@ -163,24 +190,28 @@ internal static partial class SendRequest
         }
     }
 
-    private static async Task<HttpResponseMessage> GetAsync(HttpClient client, string url)
+    private async Task<HttpResponseMessage> GetAsync(string url)
     {
-        return await client.GetAsync(url);
+        return await _httpHandler.GetAsync(url);
     }
 
-    private static async Task<HttpResponseMessage> PostAsync(HttpClient client, string url, string data, bool form)
+    private async Task<HttpResponseMessage> PostAsync(string url, string data, bool form)
     {
         if (form)
         {
-            return await client.PostAsync(url, data.ToFormUrlEncodedContent());
+            return await _httpHandler.PostAsync(url, data.ToFormUrlEncodedContent());
         }
         else
         {
-            return await client.PostAsync(url, data.ToJsonStringContent());
+            return await _httpHandler.PostAsync(url, data.ToJsonStringContent());
         }
     }
 
     [GeneratedRegex(@"\{pr\.(?<PR>\w+)\}", RegexOptions.Compiled)]
-    private static partial Regex PreRequestVariableRegex();
+    private partial Regex PreRequestVariableRegex();
 
+    public void Dispose()
+    {
+        _httpHandler.Dispose();
+    }
 }

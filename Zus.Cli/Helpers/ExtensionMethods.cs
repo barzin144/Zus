@@ -15,17 +15,15 @@ internal static class ExtensionMethods
         return json!.ToJsonString(_jsonSerializerOptions);
     }
 
-    internal static async Task<string> GetPropertyValue(this HttpResponseMessage responseMessage, string propertyName)
+    internal static string GetPropertyValue(this JsonElement jsonElement, string propertyName)
     {
         try
         {
-            JsonElement preRequestResult = await responseMessage.Content.ReadFromJsonAsync<JsonElement>();
-
-            return preRequestResult.GetProperty(propertyName).ToString();
+            return jsonElement.GetProperty(propertyName).ToString();
         }
         catch
         {
-            throw new Exception($"{propertyName} is not found in response.");
+            throw new KeyNotFoundException($"{propertyName} is not found in response.");
         }
     }
 

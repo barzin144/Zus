@@ -29,7 +29,7 @@ internal static class Jwt
                 return new CommandResult { Error = "Invalid inputs" };
             }
 
-            if (base64Hashed.Success && base64Hashed.Result?.Replace("=", "").Replace("+", "-") == hashedSignature)
+            if (base64Hashed.Success && base64Hashed.Result?.Replace("=", "").Replace("/", "_").Replace("+", "-") == hashedSignature)
             {
                 result.Add("Signature Verified");
             }

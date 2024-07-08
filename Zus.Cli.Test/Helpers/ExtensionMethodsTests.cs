@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Zus.Cli.Helpers;
 
@@ -19,23 +20,30 @@ public class ExtensionMethodsTests
     }
 
     [Fact]
+    public async void GetProperty_Should_ReturnPropertiesValue()
+    {
+        //Arrange
+    string content = "{\"PropName\":\"PropValue\",\"SecondPropName\":\"SecondPropValue\"}";
+        _httpResponseMessage.Content = new StringContent(content);
+        JsonElement response = await _httpResponseMessage.Content.ReadFromJsonAsync<JsonElement>();
+        //Act
+        string propValue = response.GetPropertyValue("PropName");
+        string secondPropValue = response.GetPropertyValue("SecondPropName");
+        //Assert
+        Assert.Equal("PropValue", propValue);
+        Assert.Equal("SecondPropValue", secondPropValue);
+    }
+
+    [Fact]
     public async void GetProperty_Should_ReturnPropertyValue()
     {
         //Arrange
         _httpResponseMessage.Content = new StringContent(_content);
+        JsonElement response = await _httpResponseMessage.Content.ReadFromJsonAsync<JsonElement>();
         //Act
-        string result = await _httpResponseMessage.GetPropertyValue("PropName");
+        string result = response.GetPropertyValue("PropName");
         //Assert
         Assert.Equal("PropValue", result);
-    }
-
-    [Fact]
-    public async void GetProperty_Should_ThrowAnException_When_ContentIsString()
-    {
-        //Arrange
-        _httpResponseMessage.Content = new StringContent("Test");
-        //Act & Assert
-        await Assert.ThrowsAsync<Exception>(async () => await _httpResponseMessage.GetPropertyValue("PropName"));
     }
 
     [Fact]
@@ -43,8 +51,9 @@ public class ExtensionMethodsTests
     {
         //Arrange
         _httpResponseMessage.Content = new StringContent(_content);
+        JsonElement response = await _httpResponseMessage.Content.ReadFromJsonAsync<JsonElement>();
         //Act & Assert
-        await Assert.ThrowsAsync<Exception>(async () => await _httpResponseMessage.GetPropertyValue("TestProp"));
+        Assert.Throws<KeyNotFoundException>(() => response.GetPropertyValue("TestProp"));
     }
 
     [Fact]
@@ -112,8 +121,8 @@ public class ExtensionMethodsTests
     }
 
     [Theory]
-    [InlineData("PropName:PropValue","{\"PropName\":\"PropValue\"}")]
-    [InlineData("first:firstValue,second:secondValue","{\"first\":\"firstValue\",\"second\":\"secondValue\"}")]
+    [InlineData("PropName:PropValue", "{\"PropName\":\"PropValue\"}")]
+    [InlineData("first:firstValue,second:secondValue", "{\"first\":\"firstValue\",\"second\":\"secondValue\"}")]
     public async void ToJsonStringContent_Should_ReturnJsonSerializedString(string data, string expected)
     {
         //Act
@@ -123,8 +132,8 @@ public class ExtensionMethodsTests
     }
 
     [Theory]
-    [InlineData("PropName:PropValue","PropName=PropValue")]
-    [InlineData("first:firstValue,second:secondValue","first=firstValue&second=secondValue")]
+    [InlineData("PropName:PropValue", "PropName=PropValue")]
+    [InlineData("first:firstValue,second:secondValue", "first=firstValue&second=secondValue")]
     public async void ToFormUrlEncodedContent_Should_ReturnFormFormatString(string data, string expected)
     {
         //Act
