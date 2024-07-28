@@ -54,8 +54,16 @@ zus send post http://localhost:5000/api/Account/UpdateProfile -p login -a "{pr.a
 zus send get http://localhost:5000/api/Product/1 -n product
 //response: { "id": "ABC123", name: "PC" }
 zus send post http://localhost:5000/api/Product/Update -p product -d "product_id:{pr.id},name:laptop"
+
+zus send post http://localhost:5000/api/Account/GetToken -n get-token -d "username:zus,password:123456"
+//response: "eyJhbGciOiJI..."
+
+zus send post http://localhost:5000/api/Account/UpdateProfile -p get-token -a "{pr.$}" -d "name:zus-tool"
+
 ```
-> "{pr.KEY_OF_RESPONSE_OBJECT}" will be replaced with Pre-request response data.
+> "{pr.KEY_OF_RESPONSE_OBJECT}" will be replaced with Pre-request response data.(If Pre-request response data is Json)
+
+> "{pr.$}" will be replaced with Pre-request response data.(If Pre-request response data is String)
 #### Resend
 >  Send a saved request.
 ```Shell
