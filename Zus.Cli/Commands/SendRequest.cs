@@ -107,7 +107,7 @@ internal partial class SendRequest : IDisposable
                 StringBuilder stringBuilder = new(data);
                 foreach (var variable in variables)
                 {
-                    var responseValue = preRequestResponse.GetPropertyValue(variable);
+                    var responseValue = variable == "$" ? preRequestResponse.ToString() : preRequestResponse.GetPropertyValue(variable);
                     stringBuilder = stringBuilder.Replace($"{{pr.{variable}}}", responseValue);
                 }
 
@@ -150,7 +150,7 @@ internal partial class SendRequest : IDisposable
             {
                 throw;
             }
-            catch
+            catch(Exception ex)
             {
                 throw new InvalidDataException("Pre-request response is not valid;");
             }
@@ -207,7 +207,7 @@ internal partial class SendRequest : IDisposable
         }
     }
 
-    [GeneratedRegex(@"\{pr\.(?<PR>\w+)\}", RegexOptions.Compiled)]
+    [GeneratedRegex(@"\{pr\.(?<PR>(\w+|\$))\}", RegexOptions.Compiled)]
     private partial Regex PreRequestVariableRegex();
 
     public void Dispose()

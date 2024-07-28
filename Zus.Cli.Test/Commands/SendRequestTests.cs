@@ -1,8 +1,8 @@
 ﻿using System.Data;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
 using Zus.Cli.Commands;
-using Zus.Cli.Helpers;
 using Zus.Cli.Models;
 using Zus.Cli.Services;
 
@@ -318,6 +318,31 @@ public class SendRequestTests
         Assert.NotNull(result.Error);
         Assert.Null(result.Result);
         Assert.False(result.Success);
+    }
+
+    [Fact]
+    public async void SendAsync_Should_ReturnResult_When_HasPreRequestWithStringContent()
+    {
+        //Arrange
+        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{pr.$}", false, "preRequest_name");
+        Request preRequest = new Request("http://prerequest.com", null, RequestMethod.Get);
+        _mockFileService.Setup(x => x.GetAsync("preRequest_name")).Returns(Task.FromResult<Request?>(preRequest));
+        _mockHttpHandler.Setup(x => x.GetAsync("http://prerequest.com"))
+        .Returns(
+                Task.FromResult(
+                    new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StringContent("\"Zus\"", Encoding.UTF8, "application/json")
+                    }
+                )
+                );
+        //Act
+        var result = await _target.SendAsync(request, null, false);
+        //Assert
+        _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
+        _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
+        Assert.Equal("requestData:Zus", request.Data);
     }
 
     [Theory]
