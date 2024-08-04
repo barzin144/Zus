@@ -83,11 +83,13 @@ zus request delete SAVED_NAME
 #### Encode
 ```Shell
 zus base64 my_text
+zus base64 -f FILE_PATH
 ```
 > output: bXlfdGV4dA==
 #### Decode
 ```Shell
 zus dbase64 bXlfdGV4dA==
+zus dbase64 -f bXlfdGV4dA== //store decoded data into txt file
 ```
 > output: my_text
 ## SHA256

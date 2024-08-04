@@ -48,10 +48,38 @@ app.AddSubCommand("request", x =>
 app.AddCommand("resend", async ([Argument] string name) => Display.Result(await ServiceFactory.GetSendRequest().ResendAsync(name)))
     .WithDescription("Send a saved request.");
 
-app.AddCommand("base64", ([Argument] string data) => Display.Result(Base64.Encode(data)))
+app.AddCommand("base64", async ([Option('f', Description = "Read data from file")] bool? file, [Argument] string data) =>
+{
+    if (file.HasValue && file.Value == true)
+    {
+        var fileReaderService = ServiceFactory.GetFileReaderService(data);
+        Display.Result(await Base64.EncodeFromFile(fileReaderService));
+    }
+    else
+    {
+        Display.Result(Base64.Encode(data));
+    }
+})
     .WithDescription("Return encoded base64 of input.");
 
-app.AddCommand("dbase64", ([Argument] string data) => Display.Result(Base64.Decode(data)))
+app.AddCommand("dbase64", async ([Option('f', Description = "Open decoded data in text editor")] bool? file, [Argument] string data) =>
+{
+    if (file.HasValue && file.Value == true)
+    {
+        var tempFileService = ServiceFactory.GetTempFileService();
+        var decodeToFileResult = await Base64.DecodeToFile(tempFileService, data);
+        Display.Result(decodeToFileResult);
+        if (decodeToFileResult.Success)
+        {
+            Display.WaitForAKey("Press any key to open file.");
+            Process.OpenFile(tempFileService.FilePath);
+        }
+    }
+    else
+    {
+        Display.Result(Base64.Decode(data));
+    }
+})
     .WithDescription("Return decoded base64 of input.");
 
 app.AddCommand("sha256", ([Argument] string data, [Argument] string? secret) => Display.Result(Sha256.Hash(data, secret)))
