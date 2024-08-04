@@ -25,4 +25,10 @@ internal static class Display
         Console.ResetColor();
         return Console.ReadLine() ?? string.Empty;
     }
+
+    internal static void WaitForAKey(string message)
+    {
+        Console.Write(message);
+        Console.ReadKey();
+    }
 }

@@ -3,13 +3,13 @@ using System.Text.Json;
 
 namespace Zus.Cli.Services;
 
-public class FileService<T> : IFileService<T> where T : class, IData
+public class FileService<T> : FileServiceBase, IFileService<T> where T : class, IData
 {
     private readonly IFileStreamFactory _fileStreamFactory;
     private readonly string _filePath;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-    public FileService(IFileStreamFactory fileStreamFactory, string filePath, JsonSerializerOptions? jsonSerializerOptions = null)
+    public FileService(IFileStreamFactory fileStreamFactory, string filePath, JsonSerializerOptions? jsonSerializerOptions = null) : base(fileStreamFactory, filePath)
     {
         _fileStreamFactory = fileStreamFactory;
         _filePath = filePath;
@@ -22,16 +22,6 @@ public class FileService<T> : IFileService<T> where T : class, IData
         await _streamWriter.WriteAsync(JsonSerializer.Serialize(data, _jsonSerializerOptions));
         _streamWriter.Close();
         _streamWriter.Dispose();
-    }
-
-    public async Task<string> GetAsync()
-    {
-        var _streamReader = _fileStreamFactory.Reader(_filePath);
-        string data = await _streamReader.ReadToEndAsync();
-        _streamReader.Close();
-        _streamReader.Dispose();
-
-        return data;
     }
 
     public async Task<List<T>> GetDeserializeAsync()

@@ -13,4 +13,17 @@ internal static class ServiceFactory
         IFileService<Request> fileService = new FileService<Request>(fileStreamFactory, filePath);
         return new SendRequest(fileService, httpHandler);
     }
+
+    internal static FileServiceBase GetFileReaderService(string filePath)
+    {
+        FileStreamFactory fileStreamFactory = new FileStreamFactory(FileMode.Open);
+        return new FileServiceBase(fileStreamFactory, filePath);
+    }
+
+    internal static FileServiceBase GetTempFileService()
+    {
+        string filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.txt");
+        FileStreamFactory fileStreamFactory = new FileStreamFactory(FileMode.Create);
+        return new FileServiceBase(fileStreamFactory, filePath);
+    }
 }
