@@ -6,6 +6,7 @@
             "statement",
             "block"
         ],
-        "report-file-name": "index.html"
+        "report-file-name": "index.html",
+        "mutate": [ "!**/Zus.Cli/Program.cs" ]
     }
 }
