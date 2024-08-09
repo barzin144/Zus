@@ -4,6 +4,14 @@ namespace Zus.Cli.Helpers;
 
 internal static class Display
 {
+    internal static void Info(CommandResult result)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Result(result);
+        Console.ResetColor();
+
+    }
+
     internal static void Result(CommandResult result)
     {
         if (result.Success)

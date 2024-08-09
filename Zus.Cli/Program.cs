@@ -68,7 +68,7 @@ app.AddCommand("dbase64", async ([Option('f', Description = "Open decoded data i
     {
         var tempFileService = ServiceFactory.GetTempFileService();
         var decodeToFileResult = await Base64.DecodeToFile(tempFileService, data);
-        Display.Result(decodeToFileResult);
+        Display.Info(decodeToFileResult);
         if (decodeToFileResult.Success)
         {
             Display.WaitForAKey("Press any key to open file.");
