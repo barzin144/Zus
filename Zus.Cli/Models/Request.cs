@@ -19,7 +19,7 @@ public class Request : IData
         FormFormat = formFormat;
         PreRequest = preRequest;
     }
-    public string Url { get; }
+    public string Url { get; set; }
     public string? Auth { get; set; }
     public string Data { get; set; }
     [JsonConverter(typeof(JsonStringEnumConverter<RequestMethod>))]

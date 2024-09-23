@@ -9,7 +9,7 @@ var app = CoconaApp.Create();
 
 app.AddSubCommand("send", x =>
 {
-    var sendRequest = ServiceFactory.GetSendRequest();
+    var sendRequest = ServiceFactory.GetSendRequestService();
     x.AddCommand("get", async ([Argument] string url,
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('n', Description = "Name for saving the request")] string? name,
@@ -38,14 +38,28 @@ app.AddSubCommand("send", x =>
 
 app.AddSubCommand("request", x =>
 {
-    var sendRequest = ServiceFactory.GetSendRequest();
+    var sendRequest = ServiceFactory.GetSendRequestService();
     x.AddCommand("list", async () => Display.Result(await sendRequest.ListAsync())).WithDescription("List of saved requests.");
     x.AddCommand("delete", async ([Argument] string name) => Display.Result(await sendRequest.DeleteAsync(name))).WithDescription("Delete a request.");
 }
 )
 .WithDescription("Access to saved requests.");
 
-app.AddCommand("resend", async ([Argument] string name) => Display.Result(await ServiceFactory.GetSendRequest().ResendAsync(name)))
+app.AddSubCommand("var", x =>
+{
+    var variables = ServiceFactory.GetVariablesService();
+    x.AddCommand("list", async () => Display.Result(await variables.ListAsync())).WithDescription("List of saved variables.");
+    x.AddCommand("save", async ([Argument] string name, [Argument] string value, [Option('f', Description = "Overwrite the existing variable")] bool? force) =>
+    {
+        var variable = new LocalVariable(name, value);
+        Display.Result(await variables.SaveAsync(variable, force ?? false));
+    }).WithDescription("Save a variable.");
+    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await variables.DeleteAsync(name))).WithDescription("Delete a variable.");
+}
+)
+.WithDescription("Manage variables.");
+
+app.AddCommand("resend", async ([Argument] string name) => Display.Result(await ServiceFactory.GetSendRequestService().ResendAsync(name)))
     .WithDescription("Send a saved request.");
 
 app.AddCommand("base64", async ([Option('f', Description = "Read data from file")] bool? file, [Argument] string data) =>

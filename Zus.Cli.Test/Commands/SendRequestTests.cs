@@ -143,8 +143,14 @@ public class SendRequestTests
         Request request = new Request("http://test.com", null, RequestMethod.Get);
 
         _mockFileService.Setup(x => x.SaveAsync(It.IsAny<Request>(), false)).ThrowsAsync(new DuplicateNameException());
-        //Act & Assert
-        await Assert.ThrowsAsync<Exception>(async () => await _target.SendAsync(request, "request_name", false));
+
+        //Act
+        var result = await _target.SendAsync(request, "request_name", false);
+
+        //Assert
+        Assert.NotNull(result.Error);
+        Assert.Null(result.Result);
+        Assert.False(result.Success);
         _mockFileService.Verify(x => x.SaveAsync(It.IsAny<Request>(), false), Times.Once);
     }
 
