@@ -12,6 +12,7 @@
     - [Send Post Request](#post)
     - [Send A Request With Pre-Request](#pre-request)
     - [Resend A Request](#resend)
+- [Variable](#variable)
 - [Request](#request)
 - [Base64 Decoder/Encoder](#base64)
 - [Sha256 Hash](#sha256)
@@ -60,14 +61,28 @@ zus send post http://localhost:5000/api/Account/GetToken -n get-token -d "userna
 
 zus send post http://localhost:5000/api/Account/UpdateProfile -p get-token -a "{pr.$}" -d "name:zus-tool"
 
-```
-> "{pr.KEY_OF_RESPONSE_OBJECT}" will be replaced with Pre-request response data.(If Pre-request response data is Json)
+zus send post http://localhost:5000/api/Account/UpdateProfile -p get-token -d "name:{var.name}"
 
-> "{pr.$}" will be replaced with Pre-request response data.(If Pre-request response data is String)
+```
+> *{pr.KEY_OF_RESPONSE_OBJECT}* will be replaced with Pre-request response data.(If Pre-request response data is Json)
+
+> *{pr.$}* will be replaced with Pre-request response data.(If Pre-request response data is String)
+
+> *{var.VARIABLE_NAME}* will be replaced with value of saved variable.
 #### Resend
 >  Send a saved request.
 ```Shell
 zus resend login
+```
+## Variable
+>  Manage variables.
+#### List
+```Shell
+zus var list
+```
+#### Delete
+```Shell
+zus var delete SAVED_NAME
 ```
 ## Request
 >  Access to saved requests.

@@ -30,6 +30,7 @@ public class FileServiceTests
         _mockStreamWriter = new Mock<StreamWriter>(_mockMemoryStream);
         _mockFileStreamFactory.Setup(x => x.Reader(It.IsAny<string>())).Returns(_mockStreamReader.Object);
         _mockFileStreamFactory.Setup(x => x.Writer(It.IsAny<string>())).Returns(_mockStreamWriter.Object);
+        _mockStreamReader.Setup(x => x.ReadToEndAsync()).ReturnsAsync(_requestJson);
 
         _target = new FileService<Request>(_mockFileStreamFactory.Object, "file.json", null);
     }
@@ -74,7 +75,6 @@ public class FileServiceTests
     public async void GetDeserializeAsync_Should_Return_DeserializeData()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         //Act
         var result = await _target.GetDeserializeAsync();
         //Assert
@@ -85,7 +85,6 @@ public class FileServiceTests
     public async void SaveAsync_Should_OverwriteARequest()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         var newRequest = new Request("http://test.com", "ABC", RequestMethod.Get) { Name = "test" };
         var expectedRequests = new List<Request> { newRequest };
         //Act
@@ -98,7 +97,6 @@ public class FileServiceTests
     public async void SaveAsync_Should_ThrowAnException_When_OverwriteIsFalse()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         var newRequest = new Request("http://test.com", "ABC", RequestMethod.Get) { Name = "test" };
         //Act & Assert
         await Assert.ThrowsAsync<DuplicateNameException>(async () => await _target.SaveAsync(newRequest, false));
@@ -108,7 +106,6 @@ public class FileServiceTests
     public async void SaveAsync_Should_SaveRequest()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         var newRequest = new Request("http://test.com", "ABC", RequestMethod.Get) { Name = "newRequest" };
         //Act
         await _target.SaveAsync(newRequest, true);
@@ -121,7 +118,6 @@ public class FileServiceTests
     public async void DeleteAsync_Should_DeleteRequest()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         //Act
         await _target.DeleteAsync("test");
         //Assert
@@ -132,7 +128,6 @@ public class FileServiceTests
     public async void DeleteAsync_When_NameIsNotFound()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         //Act
         await _target.DeleteAsync("randomName");
         //Assert
@@ -143,7 +138,6 @@ public class FileServiceTests
     public async void GetAsync_Should_ReturnARequest()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         //Act
         var result = await _target.GetAsync("test");
         //Assert
@@ -155,7 +149,6 @@ public class FileServiceTests
     public async void GetAsync_Should_ReturnNull_When_NameIsNotFound()
     {
         //Arrange
-        _mockStreamReader.Setup(x => x.ReadToEndAsync()).Returns(Task.FromResult(_requestJson));
         //Act
         var result = await _target.GetAsync("randomName");
         //Assert
