@@ -47,14 +47,14 @@ app.AddSubCommand("request", x =>
 
 app.AddSubCommand("var", x =>
 {
-    var variables = ServiceFactory.GetVariablesService();
-    x.AddCommand("list", async () => Display.Result(await variables.ListAsync())).WithDescription("List of saved variables.");
+    var manageVariables = ServiceFactory.GetManageVariables();
+    x.AddCommand("list", async () => Display.Result(await manageVariables.ListAsync())).WithDescription("List of saved variables.");
     x.AddCommand("save", async ([Argument] string name, [Argument] string value, [Option('f', Description = "Overwrite the existing variable")] bool? force) =>
     {
         var variable = new LocalVariable(name, value);
-        Display.Result(await variables.SaveAsync(variable, force ?? false));
+        Display.Result(await manageVariables.SaveAsync(variable, force ?? false));
     }).WithDescription("Save a variable.");
-    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await variables.DeleteAsync(name))).WithDescription("Delete a variable.");
+    x.AddCommand("delete", async ([Argument] string name) => Display.Result(await manageVariables.DeleteAsync(name))).WithDescription("Delete a variable.");
 }
 )
 .WithDescription("Manage variables.");

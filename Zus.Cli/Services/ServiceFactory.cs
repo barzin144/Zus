@@ -11,15 +11,22 @@ internal static class ServiceFactory
         IFileStreamFactory fileStreamFactory = new FileStreamFactory();
         IHttpHandler httpHandler = new HttpHandler(TimeSpan.FromSeconds(5));
         IFileService<Request> fileService = new FileService<Request>(fileStreamFactory, filePath);
-        return new SendRequest(fileService, httpHandler);
+        VariablesService variablesService = GetVariablesService();
+        return new SendRequest(fileService, httpHandler, variablesService);
     }
 
-    internal static ManageVariables GetVariablesService()
+    internal static ManageVariables GetManageVariables()
+    {
+        VariablesService variablesService = GetVariablesService();
+        return new ManageVariables(variablesService);
+    }
+
+    internal static VariablesService GetVariablesService()
     {
         string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "zus-variables.json");
         IFileStreamFactory fileStreamFactory = new FileStreamFactory();
         IFileService<LocalVariable> fileService = new FileService<LocalVariable>(fileStreamFactory, filePath);
-        return new ManageVariables(fileService);
+        return new VariablesService(fileService);
     }
 
     internal static FileServiceBase GetFileReaderService(string filePath)

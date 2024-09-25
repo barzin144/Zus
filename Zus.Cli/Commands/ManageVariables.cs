@@ -7,18 +7,18 @@ namespace Zus.Cli.Commands;
 
 public class ManageVariables
 {
-    private readonly IFileService<LocalVariable> _fileService;
+    private readonly IVariablesService _variableService;
 
-    public ManageVariables(IFileService<LocalVariable> fileService)
+    public ManageVariables(IVariablesService variablesService)
     {
-        _fileService = fileService;
+        _variableService = variablesService;
     }
     internal async Task<CommandResult> DeleteAsync(string name)
     {
         var retypedName = Display.ConfirmMessage("Retype the name to confirm: ");
         if (retypedName == name)
         {
-            await _fileService.DeleteAsync(name);
+            await _variableService.DeleteAsync(name);
             return new CommandResult
             {
                 Result = $"Variable {name} has been deleted."
@@ -36,12 +36,12 @@ public class ManageVariables
 
     internal async Task<List<LocalVariable>> GetAsync()
     {
-        return await _fileService.GetDeserializeAsync();
+        return await _variableService.GetDeserializeAsync();
     }
 
     internal async Task<CommandResult> ListAsync()
     {
-        string variables = await _fileService.GetAsync();
+        string variables = await _variableService.GetAsync();
         return new CommandResult
         {
             Result = variables
@@ -52,7 +52,7 @@ public class ManageVariables
     {
         try
         {
-            await _fileService.SaveAsync(variable, force);
+            await _variableService.SaveAsync(variable, force);
             return new CommandResult
             {
                 Result = $"Variable {variable.Name} has been saved."

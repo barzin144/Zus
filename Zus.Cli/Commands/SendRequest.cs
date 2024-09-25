@@ -14,11 +14,13 @@ internal partial class SendRequest : IDisposable
 {
 	private readonly IFileService<Request> _fileService;
 	private readonly IHttpHandler _httpHandler;
+	private readonly IVariablesService _variablesService;
 
-	internal SendRequest(IFileService<Request> fileService, IHttpHandler httpHandler)
+	internal SendRequest(IFileService<Request> fileService, IHttpHandler httpHandler, IVariablesService variablesService)
 	{
 		_fileService = fileService;
 		_httpHandler = httpHandler;
+		_variablesService = variablesService;
 	}
 	internal async Task<CommandResult> DeleteAsync(string name)
 	{
@@ -128,6 +130,10 @@ internal partial class SendRequest : IDisposable
 				foreach (var variable in variables)
 				{
 					var value = savedVariables.FirstOrDefault(x => x.Name == variable)?.Value;
+					if (value == null)
+					{
+						throw new Exception($"{variable} variable not found.");
+					}
 					stringBuilder = stringBuilder.Replace($"{{var.{variable}}}", value);
 				}
 
@@ -162,7 +168,7 @@ internal partial class SendRequest : IDisposable
 
 	private async Task<HttpResponseMessage> SendRequestAsync(Request request)
 	{
-		List<LocalVariable> variables = await ServiceFactory.GetVariablesService().GetAsync();
+		List<LocalVariable> variables = await _variablesService.GetDeserializeAsync();
 		request.Url = ReplaceVariables(request.Url, variables);
 		request.Data = ReplaceVariables(request.Data, variables);
 
