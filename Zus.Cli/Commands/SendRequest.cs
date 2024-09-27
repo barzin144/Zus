@@ -6,7 +6,6 @@ using Zus.Cli.Models;
 using Zus.Cli.Services;
 using System.Data;
 using System.Text.Json;
-using System.Net.Http.Json;
 
 namespace Zus.Cli.Commands;
 
@@ -109,7 +108,7 @@ internal partial class SendRequest : IDisposable
 				StringBuilder stringBuilder = new(data);
 				foreach (var variable in variables)
 				{
-					var responseValue = variable == "$" ? preRequestResponse.ToString() : preRequestResponse.GetPropertyValue(variable);
+					var responseValue = variable == "$" ? preRequestResponse.GetPropertyValue("Content") : preRequestResponse.GetPropertyValue(variable);
 					stringBuilder = stringBuilder.Replace($"{{pr.{variable}}}", responseValue);
 				}
 
@@ -177,7 +176,7 @@ internal partial class SendRequest : IDisposable
 			HttpResponseMessage preRequestResponse = await ResendRequestAsync(request.PreRequest);
 			try
 			{
-				JsonElement response = await preRequestResponse.Content.ReadFromJsonAsync<JsonElement>();
+				JsonElement response = await preRequestResponse.ToJsonElement();
 				request.Data = ReplacePreRequestVariables(request.Data, response);
 				request.Auth = ReplacePreRequestVariables(request.Auth!, response);
 			}

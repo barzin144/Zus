@@ -51,6 +51,21 @@ internal static class ExtensionMethods
         }
     }
 
+    internal static async Task<JsonElement> ToJsonElement(this HttpResponseMessage responseMessage)
+    {
+        try
+        {
+            return await responseMessage.Content.ReadFromJsonAsync<JsonElement>();
+        }
+        catch
+        {
+            string content = await responseMessage.Content.ReadAsStringAsync();
+            string response = JsonSerializer.Serialize(new { Content = content });
+
+            return JsonSerializer.Deserialize<JsonElement>(response);
+        }
+    }
+
     internal static StringContent ToJsonStringContent(this string data)
     {
         var dataDic = ConvertStringDataToDictionary(data);
