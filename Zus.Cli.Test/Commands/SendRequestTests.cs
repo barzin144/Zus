@@ -360,7 +360,7 @@ public class SendRequestTests
             new HttpResponseMessage()
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("\"Zus\"", Encoding.UTF8, "application/json")
+                Content = new StringContent("Zus", Encoding.UTF8, "text/plain")
             }
         );
         //Act
