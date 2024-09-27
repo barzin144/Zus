@@ -2,12 +2,13 @@
 using System.Text.Json;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Encodings.Web;
 
 namespace Zus.Cli.Helpers;
 
 internal static class ExtensionMethods
 {
-    private readonly static JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
+    private readonly static JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     internal static string BeautifyJson(this string data)
     {
