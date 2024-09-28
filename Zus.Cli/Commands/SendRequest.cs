@@ -244,7 +244,7 @@ internal partial class SendRequest : IDisposable
 	[GeneratedRegex(@"\{pr\.(?<PR>(\w+|\$))\}", RegexOptions.Compiled)]
 	private partial Regex PreRequestVariableRegex();
 
-	[GeneratedRegex(@"\{var\.(?<VAR>(\w+|\$))\}", RegexOptions.Compiled)]
+	[GeneratedRegex(@"\{var\.(?<VAR>((\w+[a-z-_.]+)|\$))\}", RegexOptions.Compiled)]
 	private partial Regex VariableRegex();
 
 	public void Dispose()

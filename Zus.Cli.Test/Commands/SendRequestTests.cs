@@ -291,13 +291,17 @@ public class SendRequestTests
         Assert.Equal("abc", request.Auth);
     }
 
-    [Fact]
-    public async void SendAsync_Should_ReturnResult_When_HasVariable()
+    [Theory]
+    [InlineData("data")]
+    [InlineData("local-data")]
+    [InlineData("local_data")]
+    [InlineData("local.data")]
+    public async void SendAsync_Should_ReturnResult_When_HasVariable(string variableName)
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{var.data}", false);
+        Request request = new Request("http://test.com", null, RequestMethod.Post, $"requestData:{{var.{variableName}}}", false);
         _mockVariableService.Setup(x => x.GetDeserializeAsync()).ReturnsAsync(new List<LocalVariable> {
-            new LocalVariable("data", "abc")
+            new LocalVariable(variableName, "abc")
         });
         //Act
         var result = await _target.SendAsync(request, null, false);
