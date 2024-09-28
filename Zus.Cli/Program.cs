@@ -102,4 +102,7 @@ app.AddCommand("sha256", ([Argument] string data, [Argument] string? secret) => 
 app.AddCommand("djwt", ([Argument] string data, [Argument] string? secret) => Display.Result(Jwt.Decode(data, secret)))
     .WithDescription("Return decoded JWT token.");
 
+app.AddCommand("guid", () => Display.Result(UniqueID.Generate()))
+    .WithDescription("Generate a Guid");
+
 app.Run();

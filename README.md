@@ -16,6 +16,7 @@
 - [Request](#request)
 - [Base64 Decoder/Encoder](#base64)
 - [Sha256 Hash](#sha256)
+- [Guid](#guid)
 - [JWT Decoder](#jwt-decoder)
 ## Installation
 ```Shell
@@ -112,6 +113,11 @@ zus dbase64 -f bXlfdGV4dA== //store decoded data into txt file
 zus sha256 my_text
 ```
 > output: wK5CFkMfgStqjLvxe/h7zaqzNISGyy2xWP9dN893UEI=
+## GUID
+```Shell
+zus guid
+```
+> output: c4a3bb74-bc13-4cfc-8487-8eefe7912c54
 ## JWT Decoder
 ![image](https://raw.githubusercontent.com/barzin144/zus/main/.github/assets/zus-djwt.png)
 #### With Secret
