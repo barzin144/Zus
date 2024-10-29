@@ -1,13 +1,28 @@
-﻿using Zus.Cli.Commands;
+﻿using System.Runtime.InteropServices;
+using Zus.Cli.Commands;
 using Zus.Cli.Models;
 
 namespace Zus.Cli.Services;
 
 internal static class ServiceFactory
 {
+    private static string GetFilePath(ZusFileType zusFileType)
+    {
+        bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        var specialFolder = isWindows ? Environment.SpecialFolder.MyDocuments : Environment.SpecialFolder.UserProfile;
+        switch (zusFileType)
+        {
+            case ZusFileType.Variables:
+                return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-requests.json");
+            case ZusFileType.Requests:
+                return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-variables.json");
+            default: throw new NotSupportedException();
+        }
+    }
+
     internal static SendRequest GetSendRequestService()
     {
-        string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "zus-requests.json");
+        string filePath = GetFilePath(ZusFileType.Requests);
         IFileStreamFactory fileStreamFactory = new FileStreamFactory();
         IHttpHandler httpHandler = new HttpHandler(TimeSpan.FromSeconds(5));
         IFileService<Request> fileService = new FileService<Request>(fileStreamFactory, filePath);
@@ -23,7 +38,7 @@ internal static class ServiceFactory
 
     internal static VariablesService GetVariablesService()
     {
-        string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "zus-variables.json");
+        string filePath = GetFilePath(ZusFileType.Variables);
         IFileStreamFactory fileStreamFactory = new FileStreamFactory();
         IFileService<LocalVariable> fileService = new FileService<LocalVariable>(fileStreamFactory, filePath);
         return new VariablesService(fileService);
