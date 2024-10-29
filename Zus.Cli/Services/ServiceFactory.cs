@@ -12,9 +12,9 @@ internal static class ServiceFactory
         var specialFolder = isWindows ? Environment.SpecialFolder.MyDocuments : Environment.SpecialFolder.UserProfile;
         switch (zusFileType)
         {
-            case ZusFileType.Variables:
-                return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-requests.json");
             case ZusFileType.Requests:
+                return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-requests.json");
+            case ZusFileType.Variables:
                 return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-variables.json");
             default: throw new NotSupportedException();
         }
