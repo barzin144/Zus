@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 
 namespace Zus.Cli.Helpers;
 
@@ -67,6 +68,11 @@ internal static class ExtensionMethods
         }
     }
 
+    internal static StringContent ToStringContent(this string data)
+    {
+        return new StringContent(data, Encoding.UTF8, "application/json");
+    }
+
     internal static StringContent ToJsonStringContent(this string data)
     {
         var dataDic = ConvertStringDataToDictionary(data);
@@ -84,11 +90,13 @@ internal static class ExtensionMethods
     {
         Dictionary<string, string> dataDic = [];
 
-        string[] keyValueList = data.Split(',');
-        foreach (var keyValue in keyValueList)
+        Regex regex = new Regex(@"(?<KEY>\w+):(?<VALUE>(\[[^\]]*\])|(\{[^\}]*\})|([^,]*))");
+
+        MatchCollection matches = regex.Matches(data);
+
+        foreach (Match match in matches)
         {
-            string[] separatedKeyValue = keyValue.Split(':');
-            dataDic.Add(separatedKeyValue[0], separatedKeyValue[1]);
+            dataDic.Add(match.Groups["KEY"].Value, match.Groups["VALUE"].Value);
         }
 
         return dataDic;

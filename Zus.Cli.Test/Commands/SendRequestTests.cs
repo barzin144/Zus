@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using Zus.Cli.Commands;
+using Zus.Cli.Helpers;
 using Zus.Cli.Models;
 using Zus.Cli.Services;
 
@@ -255,7 +256,7 @@ public class SendRequestTests
     public async void SendAsync_Should_ReturnError_When_PreRequestNameIsNotFound()
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Get, "", false, "preRequest_name");
+        Request request = new Request("http://test.com", null, RequestMethod.Get, "", false, false, "preRequest_name");
         _mockFileService.Setup(x => x.GetAsync(It.IsAny<string>())).ReturnsAsync(null as Request);
         //Act
         var result = await _target.SendAsync(request, null, false);
@@ -270,7 +271,7 @@ public class SendRequestTests
     public async void SendAsync_Should_ReturnResult_When_HasPreRequest()
     {
         //Arrange
-        Request request = new Request("http://test.com", "{pr.token}", RequestMethod.Post, "requestData:{pr.data}", false, "preRequest_name");
+        Request request = new Request("http://test.com", "{pr.token}", RequestMethod.Post, "requestData:{pr.data}", false, false, "preRequest_name");
         Request preRequest = new Request("http://prerequest.com", null, RequestMethod.Get);
         _mockFileService.Setup(x => x.GetAsync("preRequest_name")).ReturnsAsync(preRequest);
         _mockHttpHandler.Setup(x => x.GetAsync("http://prerequest.com"))
@@ -331,7 +332,7 @@ public class SendRequestTests
     public async void SendAsync_Should_ReturnError_When_PreRequestResponseIsString()
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{pr.data}", false, "preRequest_name");
+        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{pr.data}", false, false, "preRequest_name");
         Request preRequest = new Request("http://prerequest.com", null, RequestMethod.Get);
         _mockFileService.Setup(x => x.GetAsync("preRequest_name")).ReturnsAsync(preRequest);
         _mockHttpHandler.Setup(x => x.GetAsync("http://prerequest.com"))
@@ -356,7 +357,7 @@ public class SendRequestTests
     public async void SendAsync_Should_ReturnResult_When_HasPreRequestWithStringContent()
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{pr.$}", false, "preRequest_name");
+        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{pr.$}", false, false, "preRequest_name");
         Request preRequest = new Request("http://prerequest.com", null, RequestMethod.Get);
         _mockFileService.Setup(x => x.GetAsync("preRequest_name")).ReturnsAsync(preRequest);
         _mockHttpHandler.Setup(x => x.GetAsync("http://prerequest.com"))
@@ -376,32 +377,73 @@ public class SendRequestTests
     }
 
     [Theory]
-    [InlineData(true, "application/x-www-form-urlencoded")]
-    [InlineData(false, "application/json")]
-    [InlineData(null, "application/json")]
-    public async void SendAsync_Should_AddProperHeaderToHttpClient(bool? formFormat, string headerValue)
+    [InlineData(true, false, "application/x-www-form-urlencoded")]
+    [InlineData(true, true, "application/x-www-form-urlencoded")]
+    [InlineData(true, null, "application/x-www-form-urlencoded")]
+    [InlineData(false, true, "application/json")]
+    [InlineData(false, false, "application/json")]
+    [InlineData(null, null, "application/json")]
+    public async void SendAsync_Should_AddProperHeaderToHttpClient(bool? formFormat, bool? jsonFormat, string headerValue)
     {
         //Arrange
         string data = "requestData:data";
-        Request request = new Request("http://test.com", null, RequestMethod.Post, data, formFormat);
-        _mockHttpHandler.Setup(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>())).
-            Returns(Task.FromResult(
+        Request request = new Request("http://test.com", null, RequestMethod.Post, data, formFormat, jsonFormat);
+
+        //Act & Assert
+        if (formFormat.HasValue && formFormat.Value == true)
+        {
+            FormUrlEncodedContent formFormatData = data.ToFormUrlEncodedContent();
+            HttpContent capturedContent = new FormUrlEncodedContent([]);
+
+            _mockHttpHandler.Setup(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>())).
+                Callback((string url, HttpContent content) => capturedContent = content).
+                ReturnsAsync(
                     new HttpResponseMessage()
                     {
                         StatusCode = HttpStatusCode.OK,
                         Content = new StringContent("{\"data\":\"def\"}")
-                    }
-            ));
-        //Act
-        var result = await _target.SendAsync(request, null, false);
-        //Assert
-        if (formFormat.HasValue && formFormat.Value == true)
+                    });
+            //Act
+            await _target.SendAsync(request, null, false);
+
+            Assert.Equal(await formFormatData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
+        }
+        else if (jsonFormat.HasValue && jsonFormat.Value == true)
         {
-            _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<FormUrlEncodedContent>()), Times.Once);
+            StringContent jsonFormatData = data.ToJsonStringContent();
+            HttpContent capturedContent = new StringContent("");
+
+            _mockHttpHandler.Setup(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>())).
+                Callback((string url, HttpContent content) => capturedContent = content).
+                ReturnsAsync(
+                    new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StringContent("{\"data\":\"def\"}")
+                    });
+            //Act
+            await _target.SendAsync(request, null, false);
+
+            Assert.Equal(await jsonFormatData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
         }
         else
         {
-            _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<StringContent>()), Times.Once);
+            StringContent stringData = data.ToStringContent();
+            HttpContent capturedContent = new StringContent("");
+
+            _mockHttpHandler.Setup(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>())).
+                Callback((string url, HttpContent content) => capturedContent = content).
+                ReturnsAsync(
+                    new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK,
+                        Content = new StringContent("{\"data\":\"def\"}")
+                    });
+            //Act
+            await _target.SendAsync(request, null, false);
+
+            Assert.Equal(await stringData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
+
         }
         _mockHttpHandler.Verify(x => x.AddHeader(new MediaTypeWithQualityHeaderValue(headerValue)), Times.Once);
     }
@@ -422,7 +464,7 @@ public class SendRequestTests
     public async void SendAsync_Should_SendRequest_When_RegexInDataIsNotValid()
     {
         //Arrange
-        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{prr.data}", false, "preRequest_name");
+        Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{prr.data}", false, false, "preRequest_name");
         Request preRequest = new Request("http://prerequest.com", null, RequestMethod.Get);
         _mockFileService.Setup(x => x.GetAsync("preRequest_name")).ReturnsAsync(preRequest);
         _mockHttpHandler.Setup(x => x.GetAsync("http://prerequest.com"))

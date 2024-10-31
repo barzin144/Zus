@@ -22,14 +22,15 @@ app.AddSubCommand("send", x =>
     .WithDescription("Send a Get request");
 
     x.AddCommand("post", async ([Argument] string url,
-        [Option('d', Description = "Data format: Key:Value,Key:Value and wrap your data in double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded")] string data,
+        [Option('d', Description = "Data format: Key:Value,Key:Value and wrap your data in single quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded")] string data,
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('n', Description = "Name for saving the request")] string? name,
         [Option('p', Description = "Pre-request name")] string? preRequest,
-        [Option('x', Description = "Send data in form-urlencoded")] bool? formFormat,
+        [Option('x', Description = "Convert Key:Value data to form-urlencoded")] bool? formFormat,
+        [Option('j', Description = "Convert Key:Value data to Json format")] bool? jsonFormat,
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
-        var request = new Request(url, auth, RequestMethod.Post, data, formFormat ?? false, preRequest);
+        var request = new Request(url, auth, RequestMethod.Post, data, formFormat ?? false, jsonFormat ?? false, preRequest);
         Display.Result(await sendRequest.SendAsync(request, name, force ?? false));
     })
         .WithDescription("Send a Post request");
