@@ -213,7 +213,7 @@ internal partial class SendRequest : IDisposable
 				case RequestMethod.Get:
 					return await GetAsync(request.Url);
 				case RequestMethod.Post:
-					return await PostAsync(request.Url, request.Data, request.FormFormat ?? false);
+					return await PostAsync(request.Url, request.Data, request.FormFormat ?? false, request.JsonFormat ?? false);
 				default:
 					throw new Exception("Request method is not valid.");
 			}
@@ -229,15 +229,19 @@ internal partial class SendRequest : IDisposable
 		return await _httpHandler.GetAsync(url);
 	}
 
-	private async Task<HttpResponseMessage> PostAsync(string url, string data, bool form)
+	private async Task<HttpResponseMessage> PostAsync(string url, string data, bool form, bool json)
 	{
 		if (form)
 		{
 			return await _httpHandler.PostAsync(url, data.ToFormUrlEncodedContent());
 		}
-		else
+		else if (json)
 		{
 			return await _httpHandler.PostAsync(url, data.ToJsonStringContent());
+		}
+		else
+		{
+			return await _httpHandler.PostAsync(url, data.ToStringContent());
 		}
 	}
 
