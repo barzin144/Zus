@@ -40,10 +40,11 @@ zus send post http://localhost:5000/api/Account/LoginWithFormData -x -d "usernam
 ```
 | Options            | Description                                                                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -d, --data         |  Data format: `Key:Value,Key:Value` and wrap your data in double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded |
+| -d, --data         |  Data format: `Key:Value,Key:Value` and wrap your data in single or double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded |
 | -a, --auth         | Authentication Bearer Token                                                                                                                                           |
 | -n, --name         | Name for saving the request                                                                                                                                           |
-| -x, --form-format  | Send data in form-urlencoded format                                                                                                                                   |
+| -x, --form-format  | Convert Key:Value data to form-urlencoded format                                                                                                                      |
+| -j, --json-format  | Convert Key:Value data to json format                                                                                                                                 |
 | -p, --pre-request  | Pre-request name                                                                                                                                                      |
 | -f, --force        | Overwrite the existing request with same name                                                                                                                         |
 #### Pre-Request
@@ -63,6 +64,10 @@ zus send post http://localhost:5000/api/Account/GetToken -n get-token -d "userna
 zus send post http://localhost:5000/api/Account/UpdateProfile -p get-token -a "{pr.$}" -d "name:zus-tool"
 
 zus send post http://localhost:5000/api/Account/UpdateProfile -p get-token -d "name:{var.name}"
+
+zus send post http://localhost:5000/api/Account/Login -x -d "username:zus,password:123456" //form-urlencoded format
+zus send post http://localhost:5000/api/Account/Login -j -d "username:zus,password:123456" //json format
+zus send post http://localhost:5000/api/Account/Login -d '{"username": "zus", "password": "123456"}' //string format
 
 ```
 > *{pr.KEY_OF_RESPONSE_OBJECT}* will be replaced with Pre-request response data.(If Pre-request response data is Json)
