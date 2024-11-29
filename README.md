@@ -40,7 +40,7 @@ zus send post http://localhost:5000/api/Account/LoginWithFormData -x -d "usernam
 ```
 | Options            | Description                                                                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| -d, --data         |  Data format: `Key:Value,Key:Value` and wrap your data in single or double quote. Data will be sent in Json format by default. By adding -x flag change format to form-urlencoded |
+| -d, --data         |  Data format: `Key:Value,Key:Value` and wrap your data in single or double quote. Data will be sent in string format by default. By adding -x flag change format to form-urlencoded or -j for Json format|
 | -a, --auth         | Authentication Bearer Token                                                                                                                                           |
 | -n, --name         | Name for saving the request                                                                                                                                           |
 | -x, --form-format  | Convert Key:Value data to form-urlencoded format                                                                                                                      |
