@@ -12,16 +12,18 @@ namespace Zus.Cli.Test.Commands;
 public class SendRequestTests
 {
     private readonly Mock<IFileService<Request>> _mockFileService;
+    private readonly Mock<IFileService<Response>> _mockResponsesService;
     private readonly Mock<IVariablesService> _mockVariableService;
     private readonly Mock<IHttpHandler> _mockHttpHandler;
     private readonly SendRequest _target;
 
     public SendRequestTests()
     {
-        _mockFileService = new Mock<IFileService<Request>>();
-        _mockVariableService = new Mock<IVariablesService>();
-        _mockHttpHandler = new Mock<IHttpHandler>();
-        _target = new SendRequest(_mockFileService.Object, _mockHttpHandler.Object, _mockVariableService.Object);
+        _mockFileService = new();
+        _mockVariableService = new();
+        _mockResponsesService = new();
+        _mockHttpHandler = new();
+        _target = new SendRequest(_mockFileService.Object, _mockHttpHandler.Object, _mockVariableService.Object, _mockResponsesService.Object);
     }
 
     [Fact]
@@ -126,10 +128,35 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.SendAsync(request, "request_name", true);
+        var result = await _target.SendAsync(request, "request_name", true, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockFileService.Verify(x => x.SaveAsync(It.IsAny<Request>(), true), Times.Once);
+        Assert.Null(result.Error);
+        Assert.NotNull(result.Result);
+        Assert.True(result.Success);
+    }
+
+    [Fact]
+    public async void SendAsync_Should_SaveResponse_When_SaveResponseIsTrue()
+    {
+        //Arrange
+        Request request = new Request("http://test.com", null, RequestMethod.Get);
+
+        _mockFileService.Setup(x => x.SaveAsync(It.IsAny<Request>(), It.IsAny<bool>()));
+        _mockHttpHandler.Setup(x => x.GetAsync(It.IsAny<string>()))
+        .ReturnsAsync(
+            new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("ok")
+            }
+        );
+        //Act
+        var result = await _target.SendAsync(request, null, false, true);
+        //Assert
+        _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
+        _mockResponsesService.Verify(x => x.SaveAsync(It.IsAny<Response>(), false), Times.Once);
         Assert.Null(result.Error);
         Assert.NotNull(result.Result);
         Assert.True(result.Success);
@@ -144,7 +171,7 @@ public class SendRequestTests
         _mockFileService.Setup(x => x.SaveAsync(It.IsAny<Request>(), false)).ThrowsAsync(new DuplicateNameException());
 
         //Act
-        var result = await _target.SendAsync(request, "request_name", false);
+        var result = await _target.SendAsync(request, "request_name", false, false);
 
         //Assert
         Assert.NotNull(result.Error);
@@ -161,7 +188,7 @@ public class SendRequestTests
 
         _mockHttpHandler.Setup(x => x.GetAsync(It.IsAny<string>())).ThrowsAsync(new Exception());
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockFileService.Verify(x => x.SaveAsync(It.IsAny<Request>(), It.IsAny<bool>()), Times.Never);
@@ -178,7 +205,7 @@ public class SendRequestTests
 
         _mockHttpHandler.Setup(x => x.GetAsync(It.IsAny<string>())).ThrowsAsync(new HttpRequestException());
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockFileService.Verify(x => x.SaveAsync(It.IsAny<Request>(), It.IsAny<bool>()), Times.Never);
@@ -195,7 +222,7 @@ public class SendRequestTests
 
         _mockHttpHandler.Setup(x => x.GetAsync(It.IsAny<string>())).ThrowsAsync(new TaskCanceledException());
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockFileService.Verify(x => x.SaveAsync(It.IsAny<Request>(), It.IsAny<bool>()), Times.Never);
@@ -236,7 +263,7 @@ public class SendRequestTests
 
         }
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         if (requestMethod == RequestMethod.Get)
         {
@@ -259,7 +286,7 @@ public class SendRequestTests
         Request request = new Request("http://test.com", null, RequestMethod.Get, "", "", false, false, "preRequest_name");
         _mockFileService.Setup(x => x.GetAsync(It.IsAny<string>())).ReturnsAsync(null as Request);
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Never);
         Assert.NotNull(result.Error);
@@ -283,7 +310,7 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
@@ -305,7 +332,7 @@ public class SendRequestTests
             new LocalVariable(variableName, "abc")
         });
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
         _mockVariableService.Verify(x => x.GetDeserializeAsync(), Times.Once);
@@ -319,7 +346,7 @@ public class SendRequestTests
         Request request = new Request("http://test.com", null, RequestMethod.Post, "requestData:{var.data}", "", false);
         _mockVariableService.Setup(x => x.GetDeserializeAsync()).ReturnsAsync(new List<LocalVariable>());
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Never);
         _mockVariableService.Verify(x => x.GetDeserializeAsync(), Times.Once);
@@ -344,7 +371,7 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Never);
@@ -369,7 +396,7 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
@@ -404,7 +431,7 @@ public class SendRequestTests
                         Content = new StringContent("{\"data\":\"def\"}")
                     });
             //Act
-            await _target.SendAsync(request, null, false);
+            await _target.SendAsync(request, null, false, false);
 
             Assert.Equal(await formFormatData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
         }
@@ -422,7 +449,7 @@ public class SendRequestTests
                         Content = new StringContent("{\"data\":\"def\"}")
                     });
             //Act
-            await _target.SendAsync(request, null, false);
+            await _target.SendAsync(request, null, false, false);
 
             Assert.Equal(await jsonFormatData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
         }
@@ -440,7 +467,7 @@ public class SendRequestTests
                         Content = new StringContent("{\"data\":\"def\"}")
                     });
             //Act
-            await _target.SendAsync(request, null, false);
+            await _target.SendAsync(request, null, false, false);
 
             Assert.Equal(await stringData.ReadAsStringAsync(), await capturedContent.ReadAsStringAsync());
 
@@ -454,7 +481,7 @@ public class SendRequestTests
         //Arrange
         Request request = new Request("http://test.com", "abc", RequestMethod.Get);
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.AddHeader("Authorization", "Bearer abc"), Times.Once);
@@ -466,7 +493,7 @@ public class SendRequestTests
         //Arrange
         Request request = new Request("http://test.com", null, RequestMethod.Get, "", "api-key:abc");
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.AddHeader("api-key", "abc"), Times.Once);
@@ -478,7 +505,7 @@ public class SendRequestTests
         //Arrange
         Request request = new Request("http://test.com", null, RequestMethod.Post, "propName:propValue", "api-key:abc");
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);
         _mockHttpHandler.Verify(x => x.AddHeader("api-key", "abc"), Times.Once);
@@ -500,7 +527,7 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.SendAsync(request, null, false);
+        var result = await _target.SendAsync(request, null, false, false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         _mockHttpHandler.Verify(x => x.PostAsync(It.IsAny<string>(), It.IsAny<HttpContent>()), Times.Once);

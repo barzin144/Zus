@@ -14,12 +14,14 @@ internal partial class SendRequest : IDisposable
 	private readonly IFileService<Request> _fileService;
 	private readonly IHttpHandler _httpHandler;
 	private readonly IVariablesService _variablesService;
+	private readonly IFileService<Response> _responsesService;
 
-	internal SendRequest(IFileService<Request> fileService, IHttpHandler httpHandler, IVariablesService variablesService)
+	internal SendRequest(IFileService<Request> fileService, IHttpHandler httpHandler, IVariablesService variablesService, IFileService<Response> responsesService)
 	{
 		_fileService = fileService;
 		_httpHandler = httpHandler;
 		_variablesService = variablesService;
+		_responsesService = responsesService;
 	}
 	internal async Task<CommandResult> DeleteAsync(string name)
 	{
@@ -67,7 +69,7 @@ internal partial class SendRequest : IDisposable
 		}
 	}
 
-	internal async Task<CommandResult> SendAsync(Request request, string? name, bool force)
+	internal async Task<CommandResult> SendAsync(Request request, string? name, bool force, bool saveResponse)
 	{
 		try
 		{
@@ -78,7 +80,13 @@ internal partial class SendRequest : IDisposable
 			}
 
 			HttpResponseMessage result = await SendRequestAsync(request);
-			return new CommandResult { Result = await result.BeautifyHttpResponse() };
+			string beautifyHttpResponse = await result.BeautifyHttpResponse();
+			if (saveResponse)
+			{
+				Response response = new(JsonSerializer.Deserialize<object>(beautifyHttpResponse) ?? new { }, request.Url);
+				await _responsesService.SaveAsync(response, false);
+			}
+			return new CommandResult { Result = beautifyHttpResponse };
 		}
 		catch (TaskCanceledException)
 		{

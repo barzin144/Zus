@@ -13,11 +13,12 @@ app.AddSubCommand("send", x =>
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('h', Description = "Add header to request, format: Key:Value,Key:Value and wrap your data in single quote.")] string? header,
         [Option('n', Description = "Name for saving the request")] string? name,
+        [Option('s', Description = "Save response")] bool? saveResponse,
         [Option('p', Description = "Pre-request name")] string? preRequest,
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Get, header: header, preRequest: preRequest);
-        Display.Result(await sendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await sendRequest.SendAsync(request, name, force ?? false, saveResponse ?? false));
     })
     .WithDescription("Send a Get request");
 
@@ -26,13 +27,14 @@ app.AddSubCommand("send", x =>
         [Option('a', Description = "Authentication Bearer Token")] string? auth,
         [Option('h', Description = "Add header to request, format: Key:Value,Key:Value and wrap your data in single quote.")] string? header,
         [Option('n', Description = "Name for saving the request")] string? name,
+        [Option('s', Description = "Save response")] bool? saveResponse,
         [Option('p', Description = "Pre-request name")] string? preRequest,
         [Option('x', Description = "Convert Key:Value data to form-urlencoded")] bool? formFormat,
         [Option('j', Description = "Convert Key:Value data to Json format")] bool? jsonFormat,
         [Option('f', Description = "Overwrite the existing request")] bool? force) =>
     {
         var request = new Request(url, auth, RequestMethod.Post, data, header, formFormat ?? false, jsonFormat ?? false, preRequest);
-        Display.Result(await sendRequest.SendAsync(request, name, force ?? false));
+        Display.Result(await sendRequest.SendAsync(request, name, force ?? false, saveResponse ?? false));
     })
         .WithDescription("Send a Post request");
 })
