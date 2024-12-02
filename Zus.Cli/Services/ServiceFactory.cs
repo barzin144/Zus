@@ -14,6 +14,8 @@ internal static class ServiceFactory
         {
             case ZusFileType.Requests:
                 return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-requests.json");
+            case ZusFileType.Responses:
+                return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-responses.json");
             case ZusFileType.Variables:
                 return Path.Combine(Environment.GetFolderPath(specialFolder), "zus-variables.json");
             default: throw new NotSupportedException();
@@ -27,7 +29,8 @@ internal static class ServiceFactory
         IHttpHandler httpHandler = new HttpHandler(TimeSpan.FromSeconds(5));
         IFileService<Request> fileService = new FileService<Request>(fileStreamFactory, filePath);
         VariablesService variablesService = GetVariablesService();
-        return new SendRequest(fileService, httpHandler, variablesService);
+        IFileService<Response> responsesService = GetResponsesService();
+        return new SendRequest(fileService, httpHandler, variablesService, responsesService);
     }
 
     internal static ManageVariables GetManageVariables()
@@ -42,6 +45,13 @@ internal static class ServiceFactory
         IFileStreamFactory fileStreamFactory = new FileStreamFactory();
         IFileService<LocalVariable> fileService = new FileService<LocalVariable>(fileStreamFactory, filePath);
         return new VariablesService(fileService);
+    }
+
+    internal static FileService<Response> GetResponsesService()
+    {
+        string filePath = GetFilePath(ZusFileType.Responses);
+        IFileStreamFactory fileStreamFactory = new FileStreamFactory();
+        return new FileService<Response>(fileStreamFactory, filePath);
     }
 
     internal static FileServiceBase GetFileReaderService(string filePath)
