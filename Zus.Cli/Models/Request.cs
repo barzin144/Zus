@@ -10,11 +10,12 @@ public enum RequestMethod
 }
 public class Request : IData
 {
-    public Request(string url, string? auth, RequestMethod requestMethod, string data = "", bool? formFormat = false, bool? jsonFormat = false, string? preRequest = "")
+    public Request(string url, string? auth, RequestMethod requestMethod, string data = "", string? header = "", bool? formFormat = false, bool? jsonFormat = false, string? preRequest = "")
     {
         Url = url;
         Auth = auth;
         RequestMethod = requestMethod;
+        Header = header;
         Data = data;
         FormFormat = formFormat;
         JsonFormat = jsonFormat;
@@ -25,6 +26,7 @@ public class Request : IData
     public string Data { get; set; }
     [JsonConverter(typeof(JsonStringEnumConverter<RequestMethod>))]
     public RequestMethod RequestMethod { get; }
+    public string? Header { get; }
     public string? Name { get; set; }
     public bool? FormFormat { get; }
     public bool? JsonFormat { get; }

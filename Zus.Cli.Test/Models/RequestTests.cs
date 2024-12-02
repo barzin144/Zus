@@ -8,7 +8,7 @@ public class RequestTests
     public void Request_Should_SetIdAsName()
     {
         //Arrange
-        Request target = new("http://test.com", null, RequestMethod.Get);
+        Request target = new("http://test.com", null, RequestMethod.Get, "");
         target.Name = "Test";
         //Assert
         Assert.Equal("Test", target.Id);

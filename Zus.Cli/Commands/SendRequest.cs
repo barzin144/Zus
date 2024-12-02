@@ -194,6 +194,15 @@ internal partial class SendRequest : IDisposable
 		{
 			_httpHandler.AddHeader("Authorization", $"Bearer {request.Auth}");
 		}
+
+		if (string.IsNullOrEmpty(request.Header) == false)
+		{
+			foreach (var header in ExtensionMethods.ConvertStringDataToDictionary(request.Header))
+			{
+				_httpHandler.AddHeader(header.Key, header.Value);
+			}
+		}
+
 		if (string.IsNullOrEmpty(request.Data) == false)
 		{
 			if (request.FormFormat.HasValue && request.FormFormat == true)

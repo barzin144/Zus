@@ -90,7 +90,7 @@ internal static class ExtensionMethods
     {
         Dictionary<string, string> dataDic = [];
 
-        Regex regex = new Regex(@"(?<KEY>\w+):(?<VALUE>(\[[^\]]*\])|(\{[^\}]*\})|([^,]*))");
+        Regex regex = new Regex(@"(?<KEY>[\w-_]+):(?<VALUE>(\[[^\]]*\])|(\{[^\}]*\})|([^,]*))");
 
         MatchCollection matches = regex.Matches(data);
 
