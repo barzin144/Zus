@@ -80,7 +80,7 @@ public class SendRequestTests
         string requestName = "request_name";
         _mockFileService.Setup(x => x.GetAsync(requestName)).ReturnsAsync(null as Request);
         //Act
-        var result = await _target.ResendAsync(requestName);
+        var result = await _target.ResendAsync(requestName, false);
         //Assert
         _mockFileService.Verify(x => x.GetAsync(requestName), Times.Once);
         Assert.NotNull(result.Error);
@@ -104,13 +104,39 @@ public class SendRequestTests
             }
         );
         //Act
-        var result = await _target.ResendAsync("request_name");
+        var result = await _target.ResendAsync("request_name", false);
         //Assert
         _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
         Assert.Null(result.Error);
         Assert.NotNull(result.Result);
         Assert.True(result.Success);
     }
+    
+    [Fact]
+    public async void ResendAsync_Should_CallHttpClientGetAndSaveResponse()
+    {
+        //Arrange
+        Request request = new Request("http://test.com", null, RequestMethod.Get);
+
+        _mockFileService.Setup(x => x.GetAsync(It.IsAny<string>())).ReturnsAsync(request);
+        _mockHttpHandler.Setup(x => x.GetAsync(It.IsAny<string>()))
+        .ReturnsAsync(
+            new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("ok")
+            }
+        );
+        //Act
+        var result = await _target.ResendAsync("request_name", true);
+        //Assert
+        _mockHttpHandler.Verify(x => x.GetAsync(It.IsAny<string>()), Times.Once);
+        _mockResponsesService.Verify(x => x.SaveAsync(It.IsAny<Response>(), false), Times.Once);
+        Assert.Null(result.Error);
+        Assert.NotNull(result.Result);
+        Assert.True(result.Success);
+    }
+
 
     [Fact]
     public async void SendAsync_Should_SaveRequest_When_NameIsNotNull()
