@@ -53,14 +53,20 @@ internal partial class SendRequest : IDisposable
 		};
 	}
 
-	internal async Task<CommandResult> ResendAsync(string name)
+	internal async Task<CommandResult> ResendAsync(string name, bool saveResponse)
 	{
 		try
 		{
-			HttpResponseMessage result = await ResendRequestAsync(name);
+			Request request = await GetRequestByName(name);
+			HttpResponseMessage result = await SendRequestAsync(request);
+			string beautifyHttpResponse = await result.BeautifyHttpResponse();
+			if (saveResponse)
+			{
+				await SaveResponse(request, beautifyHttpResponse);
+			}
 			return new CommandResult
 			{
-				Result = await result.BeautifyHttpResponse()
+				Result = beautifyHttpResponse
 			};
 		}
 		catch (KeyNotFoundException ex)
@@ -83,8 +89,7 @@ internal partial class SendRequest : IDisposable
 			string beautifyHttpResponse = await result.BeautifyHttpResponse();
 			if (saveResponse)
 			{
-				Response response = new(JsonSerializer.Deserialize<object>(beautifyHttpResponse) ?? new { }, request.Url);
-				await _responsesService.SaveAsync(response, false);
+				await SaveResponse(request, beautifyHttpResponse);
 			}
 			return new CommandResult { Result = beautifyHttpResponse };
 		}
@@ -104,6 +109,12 @@ internal partial class SendRequest : IDisposable
 		{
 			return new CommandResult { Error = ex.Message };
 		}
+	}
+
+	private async Task SaveResponse(Request request, string httpResponse)
+	{
+		Response response = new(JsonSerializer.Deserialize<object>(httpResponse) ?? new { }, request.Url, request.Data);
+		await _responsesService.SaveAsync(response, false);
 	}
 
 	private string ReplacePreRequestVariables(string data, JsonElement preRequestResponse)
@@ -160,7 +171,7 @@ internal partial class SendRequest : IDisposable
 		return VariableRegex().Matches(text).Select(x => x.Groups["VAR"].Value).ToList();
 	}
 
-	private async Task<HttpResponseMessage> ResendRequestAsync(string name)
+	private async Task<Request> GetRequestByName(string name)
 	{
 
 		Request? request = await _fileService.GetAsync(name);
@@ -170,6 +181,13 @@ internal partial class SendRequest : IDisposable
 			throw new KeyNotFoundException($"Error: The request with the name '{name}' was not found. Please ensure the request name is correct and try again.");
 		}
 
+		return request;
+	}
+
+	private async Task<HttpResponseMessage> ResendRequestAsync(string name)
+	{
+
+		Request request = await GetRequestByName(name);
 		return await SendRequestAsync(request);
 	}
 

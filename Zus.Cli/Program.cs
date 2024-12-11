@@ -63,7 +63,9 @@ app.AddSubCommand("var", x =>
 )
 .WithDescription("Manage variables.");
 
-app.AddCommand("resend", async ([Argument] string name) => Display.Result(await ServiceFactory.GetSendRequestService().ResendAsync(name)))
+app.AddCommand("resend", async ([Argument] string name,
+        [Option('s', Description = "Save response")] bool? saveResponse
+) => Display.Result(await ServiceFactory.GetSendRequestService().ResendAsync(name, saveResponse ?? false)))
     .WithDescription("Send a saved request.");
 
 app.AddCommand("base64", async ([Option('f', Description = "Read data from file")] bool? file, [Argument] string data) =>
