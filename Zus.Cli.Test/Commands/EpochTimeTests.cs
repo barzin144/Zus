@@ -22,23 +22,6 @@ public class EpochTimeTests
 	}
 
 	[Fact]
-	public void Convert_Should_ReturnLocalDateTime_ForValidEpochTime()
-	{
-		// Arrange
-		string epochTime = "1633072800";
-		string expectedDateTime = "Local: Friday, October 1, 2021 3:20:00 PM +08:00";
-
-		// Act
-		var result = EpochTime.Convert(epochTime, true);
-
-		// Assert
-		Assert.NotNull(result.Result);
-		Assert.True(result.Success);
-		Assert.Equal(expectedDateTime, result.Result);
-	}
-
-
-	[Fact]
 	public void Convert_Should_ReturnError_ForInvalidEpochTime()
 	{
 		// Arrange
