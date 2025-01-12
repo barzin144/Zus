@@ -172,7 +172,8 @@ zus dt 1734895248
 ```
 
 > output: UTC: Sunday, December 22, 2024 7:20:48 PM +00:00
-> Local: Monday, December 23, 2024 3:20:48 AM +08:00
+
+> output: Local: Monday, December 23, 2024 3:20:48 AM +08:00
 
 ## JWT Decoder
 

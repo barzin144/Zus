@@ -4,19 +4,25 @@ namespace Zus.Cli.Commands;
 
 public static class EpochTime
 {
-	internal static CommandResult Convert(string epochTime)
+	internal static CommandResult Convert(string epochTime, bool local)
 	{
 		try
 		{
 			var utcDateTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(epochTime)).UtcDateTime;
-			TimeZoneInfo localTimeZone = TimeZoneInfo.Local;
-			DateTime localDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, localTimeZone);
-
+			if (local)
+			{
+				TimeZoneInfo localTimeZone = TimeZoneInfo.Local;
+				DateTime localDateTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, localTimeZone);
+				return new CommandResult
+				{
+					Result = $"Local: {localDateTime:dddd, MMMM d, yyyy h:mm:ss tt zzz}"
+				};
+			}
 			return new CommandResult
 			{
-				Result =
-			$"UTC: {utcDateTime:dddd, MMMM d, yyyy h:mm:ss tt zzz}{Environment.NewLine}Local: {localDateTime:dddd, MMMM d, yyyy h:mm:ss tt zzz}"
+				Result = $"UTC: {utcDateTime:dddd, MMMM d, yyyy h:mm:ss tt zzz}"
 			};
+
 		}
 		catch (Exception ex)
 		{

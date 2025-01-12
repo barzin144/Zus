@@ -111,7 +111,11 @@ app.AddCommand("djwt", ([Argument] string data, [Argument] string? secret) => Di
 app.AddCommand("guid", () => Display.Result(UniqueID.Generate()))
     .WithDescription("Generate a Guid");
 
-app.AddCommand("dt", ([Argument] string epochTime) => Display.Result(EpochTime.Convert(epochTime)))
+app.AddCommand("dt", ([Argument] string epochTime) =>
+{
+    Display.Result(EpochTime.Convert(epochTime, false));
+    Display.Result(EpochTime.Convert(epochTime, true));
+})
     .WithDescription("Convert epoch time to date time.");
 
 app.Run();
