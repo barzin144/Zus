@@ -82,9 +82,14 @@ app.AddCommand("base64", async ([Option('f', Description = "Read data from file"
 })
     .WithDescription("Return encoded base64 of input.");
 
-app.AddCommand("dbase64", async ([Option('f', Description = "Open decoded data in text editor")] bool? file, [Argument] string data) =>
+app.AddCommand("dbase64", async ([Option('f', Description = "Read data from file")] bool? file, [Option('o', Description = "Open decoded data in text editor")] bool? output, [Argument] string data) =>
 {
-    if (file.HasValue && file.Value == true)
+    if(file.HasValue && file.Value == true)
+    {
+        var fileReaderService = ServiceFactory.GetFileReaderService(data);
+        data = await fileReaderService.GetAsync();
+    }
+    if (output.HasValue && output.Value == true)
     {
         var tempFileService = ServiceFactory.GetTempFileService();
         var decodeToFileResult = await Base64.DecodeToFile(tempFileService, data);

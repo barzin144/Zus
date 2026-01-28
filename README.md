@@ -146,7 +146,8 @@ zus base64 -f FILE_PATH
 
 ```Shell
 zus dbase64 bXlfdGV4dA==
-zus dbase64 -f bXlfdGV4dA== //store decoded data into txt file
+zus dbase64 -o bXlfdGV4dA== //store decoded data into txt file
+zus dbase64 -f FILE_PATH
 ```
 
 > output: my_text
